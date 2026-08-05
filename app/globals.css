@@ -64,6 +64,10 @@
   --brand-lavender: #a99cc6;
   --brand-cream: #efe9df;
   --brand-taupe: #cabfad;
+  /* Logo fill (light): reads black, with barely-there teal and purple at the edges. */
+  --mark-base: #1b1d1a;
+  --mark-teal: #234b49;
+  --mark-purple: #372f4c;
 }
 
 .dark {
@@ -87,6 +91,10 @@
   --border: #30312d;
   --input: #30312d;
   --ring: #b5a67d;
+  /* Logo fill (dark): reads white, with barely-there teal and purple at the edges. */
+  --mark-base: #f1ede4;
+  --mark-teal: #bcd6d3;
+  --mark-purple: #ccc0e4;
 }
 
 @layer base {
@@ -127,19 +135,19 @@
     mask: url('/brand/miramaya-mark-matte.png') center / contain no-repeat;
   }
 
-  /* Multi-color aurora fill: ocean -> lavender -> cream -> taupe, drifting
-     slowly so the symbol feels alive wherever it appears. */
+  /* Reads black (light) or white (dark). Teal and purple are only faint tints
+     at the edges, drifting slowly so the symbol feels alive without looking colored. */
   .brand-mark--aurora {
     background-image: linear-gradient(
       130deg,
-      var(--brand-ocean) 0%,
-      var(--brand-lavender) 38%,
-      var(--brand-cream) 66%,
-      var(--brand-taupe) 100%
+      var(--mark-teal) 0%,
+      var(--mark-base) 30%,
+      var(--mark-base) 70%,
+      var(--mark-purple) 100%
     );
-    background-size: 200% 200%;
-    background-position: 0% 50%;
-    animation: brand-drift 16s ease-in-out infinite;
+    background-size: 220% 220%;
+    background-position: 50% 50%;
+    animation: brand-drift 18s ease-in-out infinite;
   }
 
   .brand-mark--cream {

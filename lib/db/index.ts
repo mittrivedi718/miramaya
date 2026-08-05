@@ -5,22 +5,33 @@ import { awsCredentialsProvider } from "@vercel/functions/oidc"
 import { attachDatabasePool } from "@vercel/functions"
 import * as schema from "./schema"
 
+function required(name: string): string {
+  const value = process.env[name]
+  if (!value) throw new Error(`Missing required environment variable: ${name}`)
+  return value
+}
+
+const region = required("AWS_REGION")
+const host = required("PGHOST")
+const port = Number(process.env.PGPORT) || 5432
+const user = process.env.PGUSER || "postgres"
+
 const signer = new Signer({
   credentials: awsCredentialsProvider({
-    roleArn: process.env.AWS_ROLE_ARN,
-    clientConfig: { region: process.env.AWS_REGION },
+    roleArn: required("AWS_ROLE_ARN"),
+    clientConfig: { region },
   }),
-  region: process.env.AWS_REGION,
-  hostname: process.env.PGHOST,
-  username: process.env.PGUSER || "postgres",
-  port: Number(process.env.PGPORT) || 5432,
+  region,
+  hostname: host,
+  username: user,
+  port,
 })
 
 export const pool = new Pool({
-  host: process.env.PGHOST,
+  host,
   database: process.env.PGDATABASE || "postgres",
-  port: Number(process.env.PGPORT) || 5432,
-  user: process.env.PGUSER || "postgres",
+  port,
+  user,
   // The IAM auth token acts as the connection password (valid ~15 min).
   password: () => signer.getAuthToken(),
   ssl: { rejectUnauthorized: false },

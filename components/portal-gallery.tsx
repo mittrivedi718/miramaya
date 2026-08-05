@@ -12,6 +12,7 @@ import {
 import { ArrowDown, ArrowRight } from "lucide-react"
 import { PortalPuzzle } from "@/components/portal-puzzle"
 import { SiteLogo } from "@/components/site-logo"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { WORLD_SCENES } from "@/lib/scene/worlds-3d"
 import { WORLDS } from "@/lib/worlds"
 
@@ -78,14 +79,15 @@ export function PortalGallery({ sequences }: { sequences: Record<string, string[
         <a href="#portals" aria-label="Miramaya portal gallery" className="transition-opacity hover:opacity-80">
           <SiteLogo />
         </a>
-        <div className="flex items-center gap-5 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+        <div className="flex items-center gap-4 text-[11px] uppercase tracking-[0.18em] text-muted-foreground md:gap-5">
           <span className="hidden sm:inline">five collections · one passage</span>
           <span>{String(activeIndex + 1).padStart(2, "0")} / 05</span>
+          <ThemeToggle />
         </div>
       </header>
 
       <section className={`relative z-10 flex min-h-svh flex-col justify-between px-5 pb-5 pt-24 transition-opacity duration-500 md:px-8 md:pb-8 ${entering ? "opacity-0" : "opacity-100"}`}>
-        <div className="max-w-xl">
+        <div className="max-w-xl rounded-lg border border-border/60 bg-background/55 p-5 backdrop-blur-md md:p-6">
           <p className="mb-3 text-[10px] uppercase tracking-[0.28em] text-muted-foreground">A gallery of other places</p>
           <h1 className="font-serif text-4xl leading-none tracking-tight text-balance md:text-6xl">Choose the mirror that remembers you.</h1>
         </div>

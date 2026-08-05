@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { BrandMark } from "@/components/brand-mark"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { sanitizeReturnPath } from "@/lib/site-gate"
 import { UnlockForm } from "./unlock-form"
 
@@ -18,7 +19,10 @@ export default async function EnterPage({
   const returnPath = sanitizeReturnPath(from)
 
   return (
-    <main className="flex min-h-svh flex-col items-center justify-center gap-12 bg-background px-6 py-16 text-foreground">
+    <main className="relative flex min-h-svh flex-col items-center justify-center gap-12 bg-background px-6 py-16 text-foreground">
+      <div className="absolute right-5 top-5 md:right-8 md:top-8">
+        <ThemeToggle />
+      </div>
       <div className="flex flex-col items-center gap-6 text-center">
         <BrandMark tone="aurora" title="Miramaya" className="h-20 drop-shadow-[0_0_30px_color-mix(in_oklab,var(--brand-lavender)_35%,transparent)]" />
         <div className="flex flex-col gap-3">

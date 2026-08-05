@@ -36,6 +36,38 @@
 }
 
 :root {
+  /* Light: a warm-white museum. Pearl and fog, deep ink, a quiet ocean accent. */
+  color-scheme: light;
+  --background: #f3f1ea;
+  --foreground: #20221f;
+  --card: #faf8f2;
+  --card-foreground: #20221f;
+  --popover: #faf8f2;
+  --popover-foreground: #20221f;
+  --primary: #20221f;
+  --primary-foreground: #f3f1ea;
+  --secondary: #e8e4d9;
+  --secondary-foreground: #20221f;
+  --muted: #e8e4d9;
+  --muted-foreground: #6c6a61;
+  --accent: #6f8b90;
+  --accent-foreground: #f3f1ea;
+  --destructive: #a8574c;
+  --border: #d9d4c7;
+  --input: #d9d4c7;
+  --ring: #6f8b90;
+  --radius: 0.25rem;
+  /* Brand mark palette, drawn from the Miramaya board:
+     oceanic devotion, lavender illusion, cream union, taupe ground.
+     These are brand constants and stay identical across both themes. */
+  --brand-ocean: #7f9aa6;
+  --brand-lavender: #a99cc6;
+  --brand-cream: #efe9df;
+  --brand-taupe: #cabfad;
+}
+
+.dark {
+  /* Dark: the original sacred base. Near-black ground, warm ash light, gold. */
   color-scheme: dark;
   --background: #080908;
   --foreground: #eeeae1;
@@ -55,13 +87,6 @@
   --border: #30312d;
   --input: #30312d;
   --ring: #b5a67d;
-  --radius: 0.25rem;
-  /* Brand mark palette, drawn from the Miramaya board:
-     oceanic devotion, lavender illusion, cream union, taupe ground. */
-  --brand-ocean: #7f9aa6;
-  --brand-lavender: #a99cc6;
-  --brand-cream: #efe9df;
-  --brand-taupe: #cabfad;
 }
 
 @layer base {

@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { SiteLogo } from "@/components/site-logo"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { WORLDS, type World } from "@/lib/worlds"
 
 export function StoreHeader({ world }: { world: World }) {
@@ -21,7 +22,10 @@ export function StoreHeader({ world }: { world: World }) {
             </Link>
           ))}
         </nav>
-        <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Preview</span>
+        <div className="flex items-center gap-4">
+          <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Preview</span>
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   )

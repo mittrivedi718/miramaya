@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { BrandMark } from "@/components/brand-mark"
+import { LiveStamp } from "@/components/live-stamp"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { sanitizeReturnPath } from "@/lib/site-gate"
 import { UnlockForm } from "./unlock-form"
@@ -24,18 +25,24 @@ export default async function EnterPage({
         <ThemeToggle />
       </div>
       <div className="flex flex-col items-center gap-6 text-center">
-        <BrandMark tone="aurora" title="Miramaya" className="h-20 drop-shadow-[0_0_30px_color-mix(in_oklab,var(--brand-lavender)_35%,transparent)]" />
+        <BrandMark tone="aurora" title="MiraMaya" className="h-20 drop-shadow-[0_0_30px_color-mix(in_oklab,var(--brand-lavender)_35%,transparent)]" />
         <div className="flex flex-col gap-3">
-          <h1 className="font-serif text-4xl tracking-[-0.03em] text-balance md:text-5xl">Miramaya</h1>
+          <h1 className="font-serif text-4xl tracking-[-0.03em] text-balance md:text-5xl">MiraMaya</h1>
           <p className="max-w-xs text-sm leading-relaxed text-muted-foreground text-pretty">
-            This is a private preview. Enter the passphrase to step inside.
+            This is a private preview, still being written. Enter the passphrase to step inside.
+          </p>
+          <p className="mt-1 font-mono text-[10px] leading-relaxed text-muted-foreground/70">
+            {"// draft — a house of mirrors in progress"}
           </p>
         </div>
       </div>
 
       <UnlockForm from={returnPath} />
 
-      <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70">By invitation only</p>
+      <div className="flex flex-col items-center gap-2">
+        <LiveStamp prefix="composing" />
+        <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70">By invitation only</p>
+      </div>
     </main>
   )
 }

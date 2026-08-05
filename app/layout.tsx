@@ -14,15 +14,16 @@ const cormorant = Cormorant_Garamond({
 })
 
 export const metadata: Metadata = {
-  title: { default: "Miramaya", template: "%s · Miramaya" },
+  title: { default: "MiraMaya", template: "%s · MiraMaya" },
   description: "Five portals. Five collections. Objects from mira, maya, gaia, mirabelle, and marked by Mit.",
   icons: {
     icon: [
       { url: "/brand/favicon-cream.png", media: "(prefers-color-scheme: dark)" },
       { url: "/brand/favicon-ink.png", media: "(prefers-color-scheme: light)" },
     ],
-    apple: "/brand/favicon-cream.png",
+    apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
   },
+  appleWebApp: { capable: true, title: "MiraMaya", statusBarStyle: "black-translucent" },
   generator: "v0.app",
 }
 

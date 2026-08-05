@@ -76,12 +76,12 @@ export function PortalGallery({ sequences }: { sequences: Record<string, string[
       </div>
 
       <header className="absolute inset-x-0 top-0 z-20 flex items-center justify-between border-b border-border px-5 py-4 md:px-8">
-        <a href="#portals" aria-label="Miramaya portal gallery" className="transition-opacity hover:opacity-80">
+        <a href="#portals" aria-label="MiraMaya portal gallery" className="transition-opacity hover:opacity-80">
           <SiteLogo />
         </a>
         <div className="flex items-center gap-4 text-[11px] uppercase tracking-[0.18em] text-muted-foreground md:gap-5">
-          <span className="hidden sm:inline">five collections · one passage</span>
-          <span>{String(activeIndex + 1).padStart(2, "0")} / 05</span>
+          <a href="/about" className="transition-colors hover:text-foreground">About</a>
+          <span className="hidden sm:inline">{String(activeIndex + 1).padStart(2, "0")} / 05</span>
           <ThemeToggle />
         </div>
       </header>
@@ -90,6 +90,10 @@ export function PortalGallery({ sequences }: { sequences: Record<string, string[
         <div className="max-w-xl rounded-lg border border-border/60 bg-background/55 p-5 backdrop-blur-md md:p-6">
           <p className="mb-3 text-[10px] uppercase tracking-[0.28em] text-muted-foreground">A gallery of other places</p>
           <h1 className="font-serif text-4xl leading-none tracking-tight text-balance md:text-6xl">Choose the mirror that remembers you.</h1>
+          <p className="mt-4 font-mono text-[10px] leading-relaxed text-muted-foreground">
+            {"// still being written — "}
+            <a href="/about" className="text-accent underline underline-offset-2 hover:opacity-80">read the draft</a>
+          </p>
         </div>
 
         <div className="flex flex-1 items-center justify-center py-10">
@@ -101,24 +105,26 @@ export function PortalGallery({ sequences }: { sequences: Record<string, string[
             aria-label={`Enter ${world.name}`}
           >
             <span className="absolute inset-3 rounded-[50%_50%_1.5rem_1.5rem] border border-foreground/20" />
-            <span className="relative flex w-full items-end justify-between border-t border-foreground/30 pt-4 text-left">
+            {/* Soft scrim so the caption stays legible over any scene, yet still reads like a reflection surfacing through water. */}
+            <span className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 rounded-b-[2rem] bg-gradient-to-t from-background/85 via-background/45 to-transparent backdrop-blur-[2px]" aria-hidden="true" />
+            <span className="relative flex w-full items-end justify-between border-t border-foreground/40 pt-4 text-left">
               <span>
-                <span className="block font-serif text-4xl tracking-tight md:text-5xl">{world.name}</span>
-                <span className="mt-1 block text-[10px] uppercase tracking-[0.2em] text-muted-foreground">{world.tagline}</span>
+                <span className="block font-serif text-4xl tracking-tight text-foreground [text-shadow:0_1px_12px_var(--background)] md:text-5xl">{world.name}</span>
+                <span className="mt-1 block text-[10px] uppercase tracking-[0.2em] text-foreground/75 [text-shadow:0_1px_8px_var(--background)]">{world.tagline}</span>
               </span>
-              <ArrowRight className="size-5 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+              <ArrowRight className="size-5 shrink-0 text-foreground transition-transform group-hover:translate-x-1 [filter:drop-shadow(0_1px_6px_var(--background))]" aria-hidden="true" />
             </span>
           </button>
         </div>
 
-        <div id="portals" className="grid grid-cols-5 border-y border-border">
+        <div id="portals" className="grid grid-cols-5 border-y border-border backdrop-blur-md">
           {WORLDS.map((item, index) => (
             <button
               key={item.handle}
               type="button"
               onClick={() => select(index)}
               aria-pressed={index === activeIndex}
-              className={`min-w-0 border-r border-border px-2 py-4 text-left last:border-r-0 md:px-4 ${index === activeIndex ? "bg-foreground text-background" : "bg-background/50 text-muted-foreground hover:bg-card hover:text-foreground"}`}
+              className={`min-w-0 border-r border-border px-2 py-4 text-left last:border-r-0 md:px-4 ${index === activeIndex ? "bg-foreground text-background" : "bg-background/70 text-foreground/70 hover:bg-card hover:text-foreground"}`}
             >
               <span className="block truncate font-serif text-sm md:text-xl">{item.name}</span>
               <span className="mt-1 hidden truncate text-[9px] uppercase tracking-[0.14em] md:block">{item.keywords.join(" · ")}</span>

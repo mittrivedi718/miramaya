@@ -7,7 +7,7 @@ export function SiteLogo({ compact = false }: { compact?: boolean }) {
       {!compact && (
         <span className="font-serif text-lg tracking-[0.16em] text-foreground">MiraMaya</span>
       )}
-      <span className="sr-only">Miramaya home</span>
+      <span className="sr-only">MiraMaya home</span>
     </span>
   )
 }

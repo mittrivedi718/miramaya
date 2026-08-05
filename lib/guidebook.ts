@@ -3,10 +3,10 @@ import { createHmac, timingSafeEqual } from "node:crypto"
 
 export const GUIDE_COOKIE = "mm_guidebook"
 
-/** The accepted guidebook passwords. Both phrasings the owner chose are allowed. */
+/** The accepted guidebook password chosen by the owner. */
 export function acceptedGuidebookPasswords(): string[] {
   const extra = process.env.GUIDEBOOK_PASSWORD?.trim()
-  const base = ["MiraMaya MIRAMAYA11", "MiraMaya MIRAMAY"]
+  const base = ["11Mira11Maya11Mia11"]
   return extra ? [extra, ...base] : base
 }
 

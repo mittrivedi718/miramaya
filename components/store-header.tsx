@@ -7,7 +7,7 @@ export function StoreHeader({ world }: { world: World }) {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur-md">
       <div className="flex h-16 items-center justify-between px-5 md:px-8">
-        <Link href="/" className="transition-opacity hover:opacity-80" aria-label="Return to Miramaya portal gallery">
+        <Link href="/" className="transition-opacity hover:opacity-80" aria-label="Return to MiraMaya portal gallery">
           <SiteLogo compact />
         </Link>
         <nav className="hidden items-center gap-6 md:flex" aria-label="Worlds">

@@ -30,7 +30,7 @@ export function AdminConsole({ worlds, sequences, links, guidebookText }: { worl
   return (
     <div className="grid min-h-svh bg-background text-foreground lg:grid-cols-[17rem_1fr]">
       <aside className="border-b border-border p-5 lg:border-b-0 lg:border-r lg:p-7">
-        <p className="text-[10px] uppercase tracking-[0.26em] text-muted-foreground">miramaya controls</p>
+        <p className="text-[10px] uppercase tracking-[0.26em] text-muted-foreground">MiraMaya controls</p>
         <h1 className="mt-3 font-serif text-4xl">Passages</h1>
         <nav className="mt-8 grid grid-cols-2 gap-2 lg:grid-cols-1" aria-label="Worlds">
           {worlds.map((item) => <button key={item.handle} onClick={() => setActive(item.handle)} className={`border px-4 py-3 text-left font-serif text-lg ${active === item.handle ? "border-foreground bg-foreground text-background" : "border-border text-muted-foreground"}`}>{item.name}</button>)}

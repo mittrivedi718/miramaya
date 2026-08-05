@@ -15,9 +15,20 @@
 export const GATE_COOKIE = "mm_site_access"
 const GATE_MESSAGE = "miramaya-site-access-v1"
 
-/** True only when a view password has actually been configured. */
+/**
+ * Every passphrase that unlocks the site. The owner's chosen phrase is baked in
+ * so the gate works even before SITE_GATE_PASSWORD is set in the environment;
+ * any configured SITE_GATE_PASSWORD is also accepted.
+ */
+export function acceptedGatePasswords(): string[] {
+  const configured = process.env.SITE_GATE_PASSWORD?.trim()
+  const base = ["11Mira11Maya11Mia11"]
+  return configured && !base.includes(configured) ? [configured, ...base] : base
+}
+
+/** True whenever the gate can verify visitors (a signing secret + at least one passphrase). */
 export function isGateEnabled(): boolean {
-  return Boolean(process.env.SITE_GATE_PASSWORD && process.env.BETTER_AUTH_SECRET)
+  return Boolean(process.env.BETTER_AUTH_SECRET) && acceptedGatePasswords().length > 0
 }
 
 function toBase64Url(buffer: ArrayBuffer): string {

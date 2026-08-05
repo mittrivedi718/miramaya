@@ -43,6 +43,23 @@ export default async function WorldStorePage({ params }: { params: Promise<{ han
         </section>
       )}
 
+      {world.handle === "marked-by-mit" && (
+        <section id="book" className="border-t border-border px-5 py-20 md:px-8 md:py-28">
+          <div className="mx-auto grid max-w-5xl gap-12 md:grid-cols-[0.9fr_1.1fr]">
+            <div>
+              <p className="mb-4 text-[10px] uppercase tracking-[0.26em] text-muted-foreground">Book a marking</p>
+              <h2 className="font-serif text-4xl leading-[0.9] tracking-tight text-balance md:text-6xl">A consultation before the needle.</h2>
+              <p className="mt-6 max-w-md text-sm leading-relaxed text-muted-foreground md:text-base">
+                Every mark begins with a conversation. Tell me what you carry and what you want to keep. I read every
+                request myself and answer from{" "}
+                <a href="mailto:createwithmit@gmail.com" className="underline underline-offset-4">createwithmit@gmail.com</a>.
+              </p>
+            </div>
+            <ConsultationForm />
+          </div>
+        </section>
+      )}
+
       <footer className="flex items-end justify-between border-t border-border px-5 py-12 md:px-8">
         <div>
           <p className="font-serif text-3xl">{world.name}</p>

@@ -1,11 +1,11 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { BrandMark } from "@/components/brand-mark"
+import { hasGuidebookAccess } from "@/lib/guidebook"
 import { getPortalSequences } from "@/lib/portal-access"
 import { SYMBOLS } from "@/lib/portal-symbols"
-import { getWorld, WORLDS } from "@/lib/worlds"
+import { WORLDS } from "@/lib/worlds"
 import { GuideForm } from "./guide-form"
-import { hasGuidebookAccess } from "./actions"
 
 export const dynamic = "force-dynamic"
 

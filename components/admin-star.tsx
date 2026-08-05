@@ -9,7 +9,7 @@ export function AdminStar() {
     <button
       type="button"
       onClick={() => router.push("/guidebook")}
-      className="fixed bottom-2 left-2 z-50 flex size-7 items-center justify-center text-foreground/35 transition-colors hover:text-foreground focus-visible:text-foreground focus-visible:outline-1 focus-visible:outline-offset-2"
+      className="fixed bottom-[max(0.5rem,env(safe-area-inset-bottom))] left-[max(0.5rem,env(safe-area-inset-left))] z-50 flex size-11 items-center justify-center text-foreground/35 transition-colors hover:text-foreground focus-visible:text-foreground focus-visible:outline-1 focus-visible:outline-offset-2"
       aria-label="The white star — guidebook"
     >
       <Star className="size-3 fill-current" aria-hidden="true" />

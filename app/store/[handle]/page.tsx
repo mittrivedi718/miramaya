@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation"
+import { ConsultationForm } from "@/components/consultation-form"
 import { ProductGrid } from "@/components/product-grid"
 import { StoreHeader } from "@/components/store-header"
 import { requireAdmin } from "@/lib/admin"

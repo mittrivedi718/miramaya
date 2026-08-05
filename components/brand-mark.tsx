@@ -15,19 +15,19 @@ export function BrandMark({
   className = "",
   style,
   title,
+  shimmer = true,
 }: {
   tone?: BrandMarkTone
   className?: string
   style?: CSSProperties
   title?: string
+  /** Subtle light band that drifts through the reflection line. */
+  shimmer?: boolean
 }) {
   return (
-    <span
-      role={title ? "img" : undefined}
-      aria-label={title}
-      aria-hidden={title ? undefined : true}
-      className={`brand-mark brand-mark--${tone} ${className}`}
-      style={style}
-    />
+    <span className="brand-mark-wrap" role={title ? "img" : undefined} aria-label={title} aria-hidden={title ? undefined : true}>
+      <span className={`brand-mark brand-mark--${tone} ${className}`} style={style} aria-hidden="true" />
+      {shimmer && <span className={`brand-mark--sheen ${className}`} aria-hidden="true" />}
+    </span>
   )
 }

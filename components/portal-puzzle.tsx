@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useMemo, useState, useTransition } from "react"
 import { Bird, Cloud, Eye, Flower2, Heart, KeyRound, Leaf, Moon, Mountain, Sparkle, Star, Sun, Syringe } from "lucide-react"
 import { unlockPortal } from "@/app/portal-actions"
 import { SYMBOLS } from "@/lib/portal-symbols"
@@ -16,8 +16,17 @@ type PortalPuzzleProps = {
 
 export function PortalPuzzle({ handle, symbols, onUnlocked, onCancel }: PortalPuzzleProps) {
   const [presses, setPresses] = useState<string[]>([])
-  const [message, setMessage] = useState("Touch the symbols in the shared order.")
+  const [message, setMessage] = useState("Touch the symbols in the order the guidebook keeps.")
   const [pending, startTransition] = useTransition()
+  // Shuffle the grid so its layout never gives away the answer order.
+  const shown = useMemo(() => {
+    const copy = [...symbols]
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[copy[i], copy[j]] = [copy[j], copy[i]]
+    }
+    return copy
+  }, [symbols])
 
   function press(symbol: string) {
     if (pending) return
@@ -54,7 +63,7 @@ export function PortalPuzzle({ handle, symbols, onUnlocked, onCancel }: PortalPu
         </div>
 
         <div className="grid grid-cols-3 gap-3">
-          {symbols.map((symbolId) => {
+          {shown.map((symbolId) => {
             const symbol = SYMBOLS[symbolId as keyof typeof SYMBOLS]
             const Icon = symbol ? icons[symbol.glyph] : Sparkle
             return (

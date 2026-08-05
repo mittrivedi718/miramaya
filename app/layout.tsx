@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from "next"
 import { Cormorant_Garamond, Geist } from "next/font/google"
 import { AdminStar } from "@/components/admin-star"
 import { ThemeProvider } from "@/components/theme-provider"
+import { WaterAmbience } from "@/components/water-ambience"
 import "./globals.css"
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist" })
@@ -47,6 +48,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className="font-sans antialiased">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
           {children}
+          <WaterAmbience />
           <AdminStar />
         </ThemeProvider>
         {process.env.NODE_ENV === "production" && <Analytics />}

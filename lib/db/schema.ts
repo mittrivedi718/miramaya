@@ -66,6 +66,19 @@ export const shareLinks = pgTable("share_links", {
   lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
 })
 
+export const consultations = pgTable("consultations", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  placement: text("placement"),
+  size: text("size"),
+  idea: text("idea").notNull(),
+  budget: text("budget"),
+  availability: text("availability"),
+  status: text("status").notNull().default("new"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+})
+
 export const shareLinkEvents = pgTable("share_link_events", {
   id: bigint("id", { mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),
   shareLinkId: uuid("share_link_id").notNull(),

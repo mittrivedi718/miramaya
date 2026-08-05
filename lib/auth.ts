@@ -11,13 +11,8 @@ export const auth = betterAuth({
       : process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
         : process.env.V0_RUNTIME_URL),
-  emailAndPassword: { enabled: true, autoSignIn: true, minPasswordLength: 4 },
+  emailAndPassword: { enabled: true, autoSignIn: true },
   trustedOrigins: [
-    "http://localhost:3000",
-    // v0 / Vercel preview + production hosts (wildcards cover the rotating
-    // sandbox preview domains like https://sb-xxxx.vercel.run).
-    "https://*.vercel.run",
-    "https://*.vercel.app",
     ...(process.env.V0_RUNTIME_URL ? [process.env.V0_RUNTIME_URL] : []),
     ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
     ...(process.env.VERCEL_PROJECT_PRODUCTION_URL ? [`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`] : []),

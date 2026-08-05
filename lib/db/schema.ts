@@ -1,4 +1,4 @@
-import { boolean, integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core"
+import { bigint, boolean, integer, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core"
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -46,38 +46,30 @@ export const verification = pgTable("verification", {
   updatedAt: timestamp("updatedAt").defaultNow(),
 })
 
-// A piece of artwork in the public gallery (photo or video).
-export const artworks = pgTable("artworks", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  title: text("title").notNull(),
-  description: text("description"),
-  mediaType: text("media_type").notNull().default("image"), // "image" | "video"
-  url: text("url").notNull(),
-  posterUrl: text("poster_url"), // optional still frame for videos
-  sortOrder: integer("sort_order").notNull().default(0),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+export const portalSequences = pgTable("portal_sequences", {
+  handle: text("handle").primaryKey(),
+  symbolIds: jsonb("symbol_ids").$type<string[]>().notNull(),
+  enabled: boolean("enabled").notNull().default(true),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 })
 
-// Photos of Luna for the "About the Artist" section.
-export const aboutPhotos = pgTable("about_photos", {
+export const shareLinks = pgTable("share_links", {
   id: uuid("id").primaryKey().defaultRandom(),
-  url: text("url").notNull(),
-  caption: text("caption"),
-  sortOrder: integer("sort_order").notNull().default(0),
+  tokenHash: text("token_hash").notNull().unique(),
+  handle: text("handle").notNull(),
+  label: text("label"),
+  expiresAt: timestamp("expires_at", { withTimezone: true }),
+  revokedAt: timestamp("revoked_at", { withTimezone: true }),
+  useCount: integer("use_count").notNull().default(0),
+  createdBy: text("created_by").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
 })
 
-// Upcoming craft & trade shows where the artwork will be available.
-export const events = pgTable("events", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  title: text("title").notNull(),
-  venue: text("venue"),
-  location: text("location"),
-  startDate: text("start_date").notNull(), // ISO date "YYYY-MM-DD"
-  endDate: text("end_date"), // ISO date "YYYY-MM-DD"
-  startTime: text("start_time"), // free-form, e.g. "10:00 AM"
-  endTime: text("end_time"),
-  url: text("url"),
-  notes: text("notes"),
+export const shareLinkEvents = pgTable("share_link_events", {
+  id: bigint("id", { mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),
+  shareLinkId: uuid("share_link_id").notNull(),
+  eventType: text("event_type").notNull(),
+  requestFingerprint: text("request_fingerprint"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 })

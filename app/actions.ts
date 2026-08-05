@@ -1,24 +1,18 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
-import { addToCart, removeCartLine, updateCartLine } from "@/lib/shopify/cart"
+// Purchasing is intentionally disabled on this site. These are display-only
+// preview pages. The cart/checkout server actions are kept as hard stops so
+// that even a hand-crafted or replayed request cannot add items or check out.
+const PURCHASING_DISABLED = "Purchasing is disabled on this preview site."
 
-export async function addItemAction(variantId: string) {
-  if (!variantId.startsWith("gid://shopify/ProductVariant/")) {
-    throw new Error("Invalid product variant")
-  }
-  await addToCart(variantId, 1)
-  revalidatePath("/cart")
+export async function addItemAction(): Promise<never> {
+  throw new Error(PURCHASING_DISABLED)
 }
 
-export async function updateItemAction(lineId: string, quantity: number) {
-  if (!lineId.startsWith("gid://shopify/CartLine/")) throw new Error("Invalid cart line")
-  await updateCartLine(lineId, quantity)
-  revalidatePath("/cart")
+export async function updateItemAction(): Promise<never> {
+  throw new Error(PURCHASING_DISABLED)
 }
 
-export async function removeItemAction(lineId: string) {
-  if (!lineId.startsWith("gid://shopify/CartLine/")) throw new Error("Invalid cart line")
-  await removeCartLine(lineId)
-  revalidatePath("/cart")
+export async function removeItemAction(): Promise<never> {
+  throw new Error(PURCHASING_DISABLED)
 }

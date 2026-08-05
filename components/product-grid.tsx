@@ -1,5 +1,4 @@
 import Image from "next/image"
-import { AddToCart } from "@/components/add-to-cart"
 import { formatMoney } from "@/lib/shopify/products"
 import type { Product } from "@/lib/shopify/types"
 
@@ -31,8 +30,8 @@ export function ProductGrid({ products }: { products: Product[] }) {
                 <p className="shrink-0 text-sm">{formatMoney(price.amount, price.currencyCode)}</p>
               </div>
               <p className="line-clamp-4 text-sm leading-relaxed text-muted-foreground">{product.description}</p>
-              <div className="mt-auto pt-3">
-                <AddToCart variants={product.variants.filter((variant) => variant.availableForSale)} />
+              <div className="mt-auto border-t border-border pt-4">
+                <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Viewing only · not for sale</p>
               </div>
             </div>
           </article>

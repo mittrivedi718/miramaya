@@ -1,12 +1,9 @@
 import Link from "next/link"
-import { ShoppingBag } from "lucide-react"
 import { SiteLogo } from "@/components/site-logo"
-import { getCart } from "@/lib/shopify/cart"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { WORLDS, type World } from "@/lib/worlds"
 
-export async function StoreHeader({ world }: { world: World }) {
-  const cart = await getCart()
-
+export function StoreHeader({ world }: { world: World }) {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur-md">
       <div className="flex h-16 items-center justify-between px-5 md:px-8">
@@ -25,10 +22,10 @@ export async function StoreHeader({ world }: { world: World }) {
             </Link>
           ))}
         </nav>
-        <Link href="/cart" className="flex items-center gap-2 text-[10px] uppercase tracking-[0.18em]">
-          <ShoppingBag className="size-4" aria-hidden="true" />
-          Bag ({cart?.totalQuantity ?? 0})
-        </Link>
+        <div className="flex items-center gap-4">
+          <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Preview</span>
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   )

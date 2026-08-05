@@ -8,12 +8,20 @@ import { GATE_COOKIE, gateToken, isGateEnabled } from "@/lib/site-gate"
 const ALWAYS_ALLOW = ["/enter", "/api/auth"]
 
 export async function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl
+
+  // Block the public account sign-up endpoint entirely. The single owner account
+  // is created server-side (lib/admin.ts), which does NOT go through this HTTP
+  // route, so blocking it here stops strangers from creating accounts without
+  // affecting owner login.
+  if (pathname === "/api/auth/sign-up" || pathname.startsWith("/api/auth/sign-up/")) {
+    return new NextResponse("Not found", { status: 404 })
+  }
+
   // If no view password has been set yet, the site stays open. This prevents
   // ever locking the owner out during setup. The gate turns on automatically
   // the moment SITE_GATE_PASSWORD is configured.
   if (!isGateEnabled()) return NextResponse.next()
-
-  const { pathname } = request.nextUrl
 
   // Allow the unlock page, auth endpoints, and any static file (has a dot,
   // e.g. .svg / .png / .ico) so the unlock screen can render its assets.

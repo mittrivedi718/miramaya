@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
-import { GATE_COOKIE, gateToken, isGateEnabled, safeEqual, sanitizeReturnPath } from "@/lib/site-gate"
+import { acceptedGatePasswords, GATE_COOKIE, gateToken, isGateEnabled, safeEqual, sanitizeReturnPath } from "@/lib/site-gate"
 
 export type UnlockState = { error: string | null }
 
@@ -13,9 +13,9 @@ export async function unlockSite(_prev: UnlockState, formData: FormData): Promis
   if (!isGateEnabled()) redirect(from)
 
   const entered = String(formData.get("password") ?? "")
-  const expected = process.env.SITE_GATE_PASSWORD ?? ""
+  const ok = acceptedGatePasswords().some((expected) => safeEqual(entered, expected))
 
-  if (!safeEqual(entered, expected)) {
+  if (!ok) {
     return { error: "That password isn't right. Try again." }
   }
 

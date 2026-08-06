@@ -1,7 +1,20 @@
 // One underlying rule of entry — "each keeper asks for a small act of attention" —
-// expressed four different ways, one per world. The guidebook explains all of them.
-export type Mechanic = "reflection" | "refraction" | "earth" | "constellation"
-export type Ambience = "water" | "light" | "earth" | "air"
+// expressed a different way per world. The guidebook explains all of them.
+export type Mechanic = "reflection" | "refraction" | "earth" | "join"
+export type Ambience = "water" | "light" | "earth" | "air" | "bloom" | "ink"
+
+/** A "joining" gesture: connect points into a shape. Worn several ways. */
+export type JoinPattern = {
+  /** Points in a 300x200 field. */
+  points: { x: number; y: number }[]
+  /** Must be joined in sequence (vs. any order). */
+  ordered: boolean
+  /** Must return to the first point to close the shape. */
+  closed?: boolean
+  /** Visual character of the nodes and trail. */
+  glyph: "constellation" | "bloom" | "sigil"
+  label: { idle: string; active: string }
+}
 
 export type WorldEntryConfig = {
   mechanic: Mechanic
@@ -14,7 +27,20 @@ export type WorldEntryConfig = {
   rule: string
   /** Themes listed on the "still unwritten" placeholder (non-shops only). */
   themes?: string[]
+  /** Present when mechanic is "join". */
+  join?: JoinPattern
 }
+
+// A hexagonal ring of petals for mirabelle's bloom.
+const BLOOM_POINTS = (() => {
+  const cx = 150
+  const cy = 100
+  const r = 68
+  return Array.from({ length: 6 }, (_, i) => {
+    const a = (-90 + i * 60) * (Math.PI / 180)
+    return { x: Math.round(cx + r * Math.cos(a)), y: Math.round(cy + r * Math.sin(a)) }
+  })
+})()
 
 const DEFAULT: WorldEntryConfig = {
   mechanic: "reflection",
@@ -49,22 +75,57 @@ export const WORLD_ENTRY: Record<string, WorldEntryConfig> = {
     rule: "gaia — attention as making. Gather the three stones into a cairn; when it stands, the ground opens.",
   },
   mia: {
-    mechanic: "constellation",
+    mechanic: "join",
     ambience: "air",
     sells: false,
     clue: "Draw the line between what's scattered. Connect the three lights in one stroke.",
     rule: "mia — attention as connection. In a single unbroken stroke, trace a path through the three lights.",
     themes: ["memory", "the in-between", "quiet", "echo"],
+    join: {
+      points: [
+        { x: 40, y: 150 },
+        { x: 150, y: 50 },
+        { x: 260, y: 140 },
+      ],
+      ordered: false,
+      glyph: "constellation",
+      label: { idle: "connect the lights", active: "keep the line unbroken" },
+    },
   },
   mirabelle: {
-    ...DEFAULT,
-    clue: "Come back to yourself slowly. Rest here and hold, until you're ready.",
-    rule: "mirabelle — attention as stillness. Rest your hand and hold, until you have arrived.",
+    mechanic: "join",
+    ambience: "bloom",
+    sells: false,
+    clue: "Coax it open. Join each petal to the next, in turn, until the bloom comes round.",
+    rule: "mirabelle — attention as tending. Trace petal to petal in order and close the ring; the flower opens when it comes full circle.",
+    themes: ["medicine", "healing", "wonder", "love"],
+    join: {
+      points: BLOOM_POINTS,
+      ordered: true,
+      closed: true,
+      glyph: "bloom",
+      label: { idle: "open the bloom", active: "come full circle" },
+    },
   },
   "marked-by-mit": {
-    ...DEFAULT,
-    clue: "Hold, and let the mark decide it wants you.",
-    rule: "marked by Mit — attention as stillness. Hold, until the ink is sure of you.",
+    mechanic: "join",
+    ambience: "ink",
+    sells: false,
+    clue: "Draw the mark as it wants to be drawn — one stroke, in order, without lifting.",
+    rule: "marked by Mit — attention as intention. Trace the five points of the sigil in sequence, in one unbroken stroke.",
+    themes: ["white ink", "1:11", "flash", "permanence"],
+    join: {
+      points: [
+        { x: 55, y: 55 },
+        { x: 150, y: 38 },
+        { x: 118, y: 150 },
+        { x: 245, y: 88 },
+        { x: 198, y: 162 },
+      ],
+      ordered: true,
+      glyph: "sigil",
+      label: { idle: "draw the mark", active: "don't lift the line" },
+    },
   },
 }
 

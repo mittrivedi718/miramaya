@@ -51,7 +51,7 @@ export function WorldGate({ world }: { world: World }) {
           {cfg.mechanic === "reflection" && <ReflectionGate onSolved={onSolved} />}
           {cfg.mechanic === "refraction" && <RefractionGate onSolved={onSolved} name={world.name} />}
           {cfg.mechanic === "earth" && <EarthGate onSolved={onSolved} />}
-          {cfg.mechanic === "constellation" && <ConstellationGate onSolved={onSolved} />}
+          {cfg.mechanic === "join" && cfg.join && <JoinGate onSolved={onSolved} pattern={cfg.join} />}
         </div>
 
         <p className="mv-rise mv-rise-3 mt-10 text-[10px] uppercase tracking-[0.24em] text-muted-foreground/70">

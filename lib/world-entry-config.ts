@@ -1,7 +1,28 @@
 // One underlying rule of entry — "each keeper asks for a small act of attention" —
-// expressed four different ways, one per world. The guidebook explains all of them.
-export type Mechanic = "reflection" | "refraction" | "earth" | "constellation"
-export type Ambience = "water" | "light" | "earth" | "air"
+// expressed a different way per world. The guidebook explains all of them.
+export type Mechanic = "reflection" | "refraction" | "earth" | "join" | "symbols"
+export type Ambience = "water" | "light" | "earth" | "air" | "bloom" | "ink" | "astral"
+
+/** A "joining" gesture: connect points into a shape. Worn several ways. */
+export type JoinPattern = {
+  /** Points in a 300x200 field. */
+  points: { x: number; y: number }[]
+  /** Must be joined in sequence (vs. any order). */
+  ordered: boolean
+  /** Must return to the first point to close the shape. */
+  closed?: boolean
+  /** Visual character of the nodes and trail. */
+  glyph: "constellation" | "bloom" | "sigil" | "orbital"
+  label: { idle: string; active: string }
+}
+
+/** A "symbols" gesture: touch a shuffled grid of glyphs in a remembered order. */
+export type SymbolSequence = {
+  /** The secret order (symbol ids from lib/portal-symbols). */
+  order: string[]
+  /** Extra glyphs mixed into the grid as decoys. */
+  decoys: string[]
+}
 
 export type WorldEntryConfig = {
   mechanic: Mechanic
@@ -14,7 +35,31 @@ export type WorldEntryConfig = {
   rule: string
   /** Themes listed on the "still unwritten" placeholder (non-shops only). */
   themes?: string[]
+  /** Present when mechanic is "join". */
+  join?: JoinPattern
+  /** Present when mechanic is "symbols". */
+  symbols?: SymbolSequence
 }
+
+// A hexagonal ring of petals for mirabelle's bloom.
+const BLOOM_POINTS = (() => {
+  const cx = 150
+  const cy = 100
+  const r = 68
+  return Array.from({ length: 6 }, (_, i) => {
+    const a = (-90 + i * 60) * (Math.PI / 180)
+    return { x: Math.round(cx + r * Math.cos(a)), y: Math.round(cy + r * Math.sin(a)) }
+  })
+})()
+
+// mia's orbital star chart: five bodies on nested orbits, joined inner-to-outer.
+const ORBITAL_POINTS = [
+  { x: 150, y: 100 }, // the core
+  { x: 150, y: 44 }, // inner body, north
+  { x: 226, y: 118 }, // mid body, east-south
+  { x: 74, y: 132 }, // mid body, west-south
+  { x: 246, y: 44 }, // outer body, far
+]
 
 const DEFAULT: WorldEntryConfig = {
   mechanic: "reflection",
@@ -49,22 +94,45 @@ export const WORLD_ENTRY: Record<string, WorldEntryConfig> = {
     rule: "gaia — attention as making. Gather the three stones into a cairn; when it stands, the ground opens.",
   },
   mia: {
-    mechanic: "constellation",
-    ambience: "air",
+    mechanic: "join",
+    ambience: "astral",
     sells: false,
-    clue: "Draw the line between what's scattered. Connect the three lights in one stroke.",
-    rule: "mia — attention as connection. In a single unbroken stroke, trace a path through the three lights.",
-    themes: ["memory", "the in-between", "quiet", "echo"],
+    clue: "Bring the system online. Lock each body to the next, core outward, until the orbits sync.",
+    rule: "mia — attention as alignment. Trace the five bodies from the core outward in sequence; when the array locks, the gate powers on.",
+    themes: ["signal", "the in-between", "orbit", "echo"],
+    join: {
+      points: ORBITAL_POINTS,
+      ordered: true,
+      glyph: "orbital",
+      label: { idle: "acquire · align the array", active: "syncing orbits…" },
+    },
   },
   mirabelle: {
-    ...DEFAULT,
-    clue: "Come back to yourself slowly. Rest here and hold, until you're ready.",
-    rule: "mirabelle — attention as stillness. Rest your hand and hold, until you have arrived.",
+    mechanic: "join",
+    ambience: "bloom",
+    sells: false,
+    clue: "Coax it open. Join each petal to the next, in turn, until the bloom comes round.",
+    rule: "mirabelle — attention as tending. Trace petal to petal in order and close the ring; the flower opens when it comes full circle.",
+    themes: ["medicine", "healing", "wonder", "love"],
+    join: {
+      points: BLOOM_POINTS,
+      ordered: true,
+      closed: true,
+      glyph: "bloom",
+      label: { idle: "open the bloom", active: "come full circle" },
+    },
   },
   "marked-by-mit": {
-    ...DEFAULT,
-    clue: "Hold, and let the mark decide it wants you.",
-    rule: "marked by Mit — attention as stillness. Hold, until the ink is sure of you.",
+    mechanic: "symbols",
+    ambience: "ink",
+    sells: false,
+    clue: "Read the mark. Touch the signs in the order the keeper set — star, needle, moon, eye.",
+    rule: "marked by Mit — attention as memory. From the shuffled signs, touch in order: white star, silver needle, white moon, black eye.",
+    themes: ["white ink", "1:11", "flash", "permanence"],
+    symbols: {
+      order: ["white-star", "silver-needle", "white-moon", "black-eye"],
+      decoys: ["red-star", "gold-eye", "silver-moon", "blue-key"],
+    },
   },
 }
 

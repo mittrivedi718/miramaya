@@ -3,9 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { enterWorld } from "@/app/portal-actions"
-import { worldEntry } from "@/lib/world-entry-config"
+import { worldEntry, type JoinPattern, type SymbolSequence } from "@/lib/world-entry-config"
+import { SYMBOLS, type PortalSymbolId } from "@/lib/portal-symbols"
 import { worldStyle, type World } from "@/lib/worlds"
 import { WorldBackground } from "./world-background"
+import { SymbolGlyph } from "./symbol-glyph"
 
 /** The gate: renders the world's distinct act of attention, then grants and reveals. */
 export function WorldGate({ world }: { world: World }) {
@@ -52,6 +54,7 @@ export function WorldGate({ world }: { world: World }) {
           {cfg.mechanic === "refraction" && <RefractionGate onSolved={onSolved} name={world.name} />}
           {cfg.mechanic === "earth" && <EarthGate onSolved={onSolved} />}
           {cfg.mechanic === "join" && cfg.join && <JoinGate onSolved={onSolved} pattern={cfg.join} />}
+          {cfg.mechanic === "symbols" && cfg.symbols && <SymbolGate onSolved={onSolved} sequence={cfg.symbols} />}
         </div>
 
         <p className="mv-rise mv-rise-3 mt-10 text-[10px] uppercase tracking-[0.24em] text-muted-foreground/70">
@@ -234,18 +237,24 @@ function EarthGate({ onSolved }: { onSolved: () => void }) {
   )
 }
 
-/* ---- mia: attention as connection. Trace all three lights in one stroke. ---- */
-function ConstellationGate({ onSolved }: { onSolved: () => void }) {
-  const points = [
-    { x: 40, y: 150 },
-    { x: 150, y: 50 },
-    { x: 260, y: 140 },
-  ]
+/* ---- join: attention as connection. Trace the points into a shape. ----------
+   One tracing engine worn three ways: mia's astronomical orbital array,
+   mirabelle's organic bloom (a closed ring), and a plain sigil.
+   - ordered  → points must be reached in sequence
+   - closed   → must return to the first point to seal the shape        */
+function JoinGate({ onSolved, pattern }: { onSolved: () => void; pattern: JoinPattern }) {
+  const { points, ordered, closed, glyph, label } = pattern
+  const orbital = glyph === "orbital"
+  const bloom = glyph === "bloom"
+
   const svgRef = useRef<SVGSVGElement | null>(null)
   const [visited, setVisited] = useState<number[]>([])
   const [pointer, setPointer] = useState<{ x: number; y: number } | null>(null)
+  const [sealed, setSealed] = useState(false)
   const tracing = useRef(false)
   const done = useRef(false)
+
+  const total = points.length + (closed ? 1 : 0)
 
   const toLocal = (e: React.PointerEvent) => {
     const svg = svgRef.current
@@ -253,65 +262,236 @@ function ConstellationGate({ onSolved }: { onSolved: () => void }) {
     const r = svg.getBoundingClientRect()
     return { x: ((e.clientX - r.left) / r.width) * 300, y: ((e.clientY - r.top) / r.height) * 200 }
   }
-  const near = (p: { x: number; y: number }, i: number) => Math.hypot(p.x - points[i].x, p.y - points[i].y) < 34
+  const near = (p: { x: number; y: number }, i: number) =>
+    Math.hypot(p.x - points[i].x, p.y - points[i].y) < 30
 
-  const reset = () => { tracing.current = false; setVisited([]); setPointer(null) }
+  const reset = () => {
+    tracing.current = false
+    setVisited([])
+    setPointer(null)
+  }
+
+  const finish = () => {
+    done.current = true
+    tracing.current = false
+    setSealed(true)
+    window.setTimeout(onSolved, 550)
+  }
+
+  const consider = (hit: number) => {
+    if (hit === -1) return
+    // closing the ring: returning to the first node once all are visited
+    if (closed && hit === visited[0] && visited.length === points.length) {
+      finish()
+      return
+    }
+    if (visited.includes(hit)) return
+    const nextIndex = visited.length
+    if (ordered && hit !== nextIndex) return // must follow the set order
+    const next = [...visited, hit]
+    setVisited(next)
+    if (!closed && next.length === points.length) finish()
+  }
 
   const down = (e: React.PointerEvent) => {
     if (done.current) return
     const p = toLocal(e)
     const hit = points.findIndex((_, i) => near(p, i))
+    if (ordered && hit !== 0) return // must begin at the first node
     if (hit === -1) return
     tracing.current = true
-    setVisited([hit])
     setPointer(p)
+    setVisited([hit])
     ;(e.target as Element).setPointerCapture?.(e.pointerId)
   }
   const move = (e: React.PointerEvent) => {
     if (!tracing.current || done.current) return
     const p = toLocal(e)
     setPointer(p)
-    const hit = points.findIndex((_, i) => near(p, i))
-    if (hit !== -1 && !visited.includes(hit)) {
-      const next = [...visited, hit]
-      setVisited(next)
-      if (next.length === points.length) {
-        done.current = true
-        tracing.current = false
-        window.setTimeout(onSolved, 500)
-      }
-    }
+    consider(points.findIndex((_, i) => near(p, i)))
   }
   const up = () => { if (!done.current) reset() }
 
-  const line = visited.map((i) => `${points[i].x},${points[i].y}`).join(" ")
-  const liveTo = tracing.current && pointer && visited.length ? ` ${pointer.x},${pointer.y}` : ""
+  const trail = visited.map((i) => `${points[i].x},${points[i].y}`).join(" ")
+  const closeTo = sealed && closed && visited.length ? ` ${points[visited[0]].x},${points[visited[0]].y}` : ""
+  const liveTo = tracing.current && pointer && visited.length && !sealed ? ` ${pointer.x},${pointer.y}` : ""
+  const progress = visited.length / total
 
   return (
-    <svg
-      ref={svgRef}
-      viewBox="0 0 300 200"
-      className="h-52 w-[min(86vw,22rem)] touch-none select-none rounded-lg border border-foreground/15"
-      onPointerDown={down}
-      onPointerMove={move}
-      onPointerUp={up}
-      onPointerLeave={up}
-      onPointerCancel={up}
-      role="img"
-      aria-label="Trace a single line connecting the three lights"
-    >
-      {visited.length > 0 && (
-        <polyline points={line + liveTo} fill="none" stroke="var(--primary)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.9" />
-      )}
-      {points.map((pt, i) => {
-        const on = visited.includes(i)
-        return (
-          <g key={i}>
-            {on && <circle cx={pt.x} cy={pt.y} r="12" fill="var(--primary)" opacity="0.18" />}
-            <circle cx={pt.x} cy={pt.y} r={on ? 5 : 4} fill={on ? "var(--primary)" : "currentColor"} className={on ? "" : "opacity-70"} />
+    <div className="flex flex-col items-center gap-4">
+      <svg
+        ref={svgRef}
+        viewBox="0 0 300 200"
+        className={`h-52 w-[min(88vw,23rem)] touch-none select-none rounded-lg border ${
+          orbital ? "border-primary/30 bg-[radial-gradient(circle_at_50%_50%,color-mix(in_oklab,var(--primary)_10%,transparent),transparent_70%)]" : "border-foreground/15"
+        }`}
+        onPointerDown={down}
+        onPointerMove={move}
+        onPointerUp={up}
+        onPointerLeave={up}
+        onPointerCancel={up}
+        role="img"
+        aria-label={label.idle}
+      >
+        {/* orbital rings — the astronomical bed mia's bodies sit on */}
+        {orbital && (
+          <g stroke="var(--primary)" fill="none" opacity="0.28">
+            <ellipse cx="150" cy="100" rx="56" ry="56" strokeWidth="0.6" strokeDasharray="2 4" />
+            <ellipse cx="150" cy="100" rx="92" ry="82" strokeWidth="0.6" strokeDasharray="2 4" />
+            <ellipse cx="150" cy="100" rx="126" ry="60" strokeWidth="0.6" strokeDasharray="2 5" transform="rotate(-18 150 100)" />
+            <line x1="150" y1="14" x2="150" y2="26" strokeWidth="0.8" />
+            <line x1="150" y1="174" x2="150" y2="186" strokeWidth="0.8" />
+            <line x1="14" y1="100" x2="26" y2="100" strokeWidth="0.8" />
+            <line x1="274" y1="100" x2="286" y2="100" strokeWidth="0.8" />
           </g>
-        )
-      })}
-    </svg>
+        )}
+
+        {(visited.length > 0 || sealed) && (
+          <polyline
+            points={trail + liveTo + closeTo}
+            fill="none"
+            stroke="var(--primary)"
+            strokeWidth={orbital ? 1.4 : bloom ? 2 : 1.6}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            opacity={sealed ? 1 : 0.9}
+            style={orbital ? { filter: "drop-shadow(0 0 3px var(--primary))" } : undefined}
+          />
+        )}
+
+        {points.map((pt, i) => {
+          const on = visited.includes(i)
+          const isNext = ordered && !sealed && i === visited.length
+          return (
+            <g key={i}>
+              {on && (
+                <circle cx={pt.x} cy={pt.y} r={bloom ? 13 : 11} fill="var(--primary)" opacity={bloom ? 0.22 : 0.16} />
+              )}
+              {bloom ? (
+                <circle cx={pt.x} cy={pt.y} r={on ? 7 : 5} fill={on ? "var(--primary)" : "currentColor"} opacity={on ? 1 : 0.6} />
+              ) : orbital ? (
+                <g>
+                  <circle
+                    cx={pt.x} cy={pt.y} r={i === 0 ? 6 : 4.5}
+                    fill={on ? "var(--primary)" : "var(--background)"}
+                    stroke="var(--primary)" strokeWidth="1.2"
+                    style={on ? { filter: "drop-shadow(0 0 4px var(--primary))" } : undefined}
+                  />
+                  {isNext && <circle cx={pt.x} cy={pt.y} r="10" fill="none" stroke="var(--primary)" strokeWidth="0.8" className="animate-ping" style={{ transformOrigin: `${pt.x}px ${pt.y}px` }} />}
+                  <text x={pt.x + 9} y={pt.y - 7} fontSize="7" fill="var(--primary)" opacity="0.8" style={{ fontFamily: "var(--font-mono, monospace)" }}>
+                    {i === 0 ? "CORE" : `B-${String(i).padStart(2, "0")}`}
+                  </text>
+                </g>
+              ) : (
+                <circle cx={pt.x} cy={pt.y} r={on ? 5 : 4} fill={on ? "var(--primary)" : "currentColor"} opacity={on ? 1 : 0.7} />
+              )}
+            </g>
+          )
+        })}
+      </svg>
+
+      <span
+        className={`text-[10px] uppercase tracking-[0.28em] text-muted-foreground ${orbital ? "" : ""}`}
+        style={orbital ? { fontFamily: "var(--font-mono, monospace)", letterSpacing: "0.18em" } : undefined}
+      >
+        {orbital
+          ? sealed
+            ? "◈ array locked · gate online"
+            : `${label.idle}  ·  ${Math.round(progress * 100)}%`
+          : sealed
+            ? "it opens"
+            : visited.length
+              ? label.active
+              : label.idle}
+      </span>
+    </div>
   )
+}
+
+/* ---- symbols: attention as memory. Touch the shuffled signs in order. -------
+   The returning guidebook mechanic — a grid of glyphs, touched in a secret
+   sequence. A wrong touch quietly resets the trail.                     */
+function SymbolGate({ onSolved, sequence }: { onSolved: () => void; sequence: SymbolSequence }) {
+  const grid = useRef<string[]>(
+    shuffle([...sequence.order, ...sequence.decoys]).slice(0, Math.min(9, sequence.order.length + sequence.decoys.length)),
+  )
+  // guarantee every required symbol survived the slice
+  const cells = useRef<string[]>(
+    (() => {
+      const base = grid.current
+      const missing = sequence.order.filter((id) => !base.includes(id))
+      const merged = [...base]
+      missing.forEach((id, k) => { merged[merged.length - 1 - k] = id })
+      return shuffle(merged)
+    })(),
+  ).current
+
+  const [step, setStep] = useState(0)
+  const [wrong, setWrong] = useState<string | null>(null)
+  const done = useRef(false)
+
+  const touch = (id: string) => {
+    if (done.current) return
+    if (id === sequence.order[step]) {
+      const next = step + 1
+      setStep(next)
+      setWrong(null)
+      if (next === sequence.order.length) {
+        done.current = true
+        window.setTimeout(onSolved, 450)
+      }
+    } else {
+      setWrong(id)
+      setStep(0)
+      window.setTimeout(() => setWrong(null), 450)
+    }
+  }
+
+  return (
+    <div className="flex flex-col items-center gap-5">
+      {/* progress pips */}
+      <div className="flex items-center gap-2" aria-hidden="true">
+        {sequence.order.map((_, i) => (
+          <span
+            key={i}
+            className={`h-1.5 w-6 rounded-full transition-colors ${i < step ? "bg-[var(--primary)]" : "bg-foreground/20"}`}
+          />
+        ))}
+      </div>
+
+      <div className="grid grid-cols-3 gap-3">
+        {cells.map((id, i) => {
+          const sym = SYMBOLS[id as PortalSymbolId]
+          const isWrong = wrong === id
+          return (
+            <button
+              key={`${id}-${i}`}
+              type="button"
+              onClick={() => touch(id)}
+              aria-label={sym?.label ?? id}
+              className={`grid size-[4.5rem] place-items-center rounded-lg border bg-card/60 backdrop-blur-sm transition-transform focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground active:scale-95 ${
+                isWrong ? "border-destructive/70" : "border-foreground/15 hover:border-foreground/40"
+              }`}
+              style={isWrong ? { animation: "mv-rise 0.4s both" } : undefined}
+            >
+              <SymbolGlyph glyph={sym?.glyph ?? "star"} color={sym?.color ?? "var(--foreground)"} />
+            </button>
+          )
+        })}
+      </div>
+
+      <span className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground">
+        {done.current ? "the mark is read" : wrong ? "not that one — begin again" : `sign ${step} of ${sequence.order.length}`}
+      </span>
+    </div>
+  )
+}
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
 }

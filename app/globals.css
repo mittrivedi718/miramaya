@@ -397,6 +397,40 @@
     100% { background-position: 0 -60%, 0 -80%, 0 -50%, 0 -70%, 0 -90%; }
   }
 
+  /* mia — astronomical: a deep starfield with a slow-turning orbital grid */
+  .world-bg--astral {
+    background-color: #05060d;
+  }
+  .world-bg--astral > span:nth-child(1) {
+    background-image:
+      radial-gradient(1.4px 1.4px at 15% 22%, #ffffff, transparent),
+      radial-gradient(1.2px 1.2px at 62% 15%, color-mix(in oklab, var(--primary) 90%, white), transparent),
+      radial-gradient(1px 1px at 82% 42%, #dfe6ff, transparent),
+      radial-gradient(1.6px 1.6px at 34% 68%, #ffffff, transparent),
+      radial-gradient(1px 1px at 74% 78%, color-mix(in oklab, var(--primary) 80%, white), transparent),
+      radial-gradient(1.2px 1.2px at 48% 40%, #cdd6ff, transparent),
+      radial-gradient(1px 1px at 24% 88%, #ffffff, transparent);
+    background-repeat: repeat;
+    background-size: 70% 70%;
+    opacity: 0.9;
+    animation: bg-star-drift 90s linear infinite;
+  }
+  .world-bg--astral > span:nth-child(2) {
+    background-image:
+      repeating-radial-gradient(circle at 50% 50%, transparent 0 38px, color-mix(in oklab, var(--primary) 20%, transparent) 38px 39px, transparent 39px 76px),
+      conic-gradient(from 0deg at 50% 50%, transparent 0deg, color-mix(in oklab, var(--primary) 14%, transparent) 12deg, transparent 24deg, transparent 90deg, color-mix(in oklab, var(--primary) 10%, transparent) 96deg, transparent 108deg);
+    opacity: 0.5;
+    animation: bg-orbit-spin 60s linear infinite;
+  }
+  @keyframes bg-star-drift {
+    0% { transform: translate3d(0, 0, 0); }
+    100% { transform: translate3d(-6%, -4%, 0); }
+  }
+  @keyframes bg-orbit-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
   /* Monument Valley-ish soft entrances: content rises with a gentle perspective. */
   .mv-rise {
     animation: mv-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -410,6 +444,7 @@
 
   @media (prefers-reduced-motion: reduce) {
     .world-bg > span,
+    .world-bg--astral > span,
     .mv-rise { animation: none; }
     .mv-rise { opacity: 1; transform: none; }
   }

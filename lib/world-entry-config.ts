@@ -1,7 +1,7 @@
 // One underlying rule of entry — "each keeper asks for a small act of attention" —
 // expressed a different way per world. The guidebook explains all of them.
-export type Mechanic = "reflection" | "refraction" | "earth" | "join"
-export type Ambience = "water" | "light" | "earth" | "air" | "bloom" | "ink"
+export type Mechanic = "reflection" | "refraction" | "earth" | "join" | "symbols"
+export type Ambience = "water" | "light" | "earth" | "air" | "bloom" | "ink" | "astral"
 
 /** A "joining" gesture: connect points into a shape. Worn several ways. */
 export type JoinPattern = {
@@ -12,8 +12,16 @@ export type JoinPattern = {
   /** Must return to the first point to close the shape. */
   closed?: boolean
   /** Visual character of the nodes and trail. */
-  glyph: "constellation" | "bloom" | "sigil"
+  glyph: "constellation" | "bloom" | "sigil" | "orbital"
   label: { idle: string; active: string }
+}
+
+/** A "symbols" gesture: touch a shuffled grid of glyphs in a remembered order. */
+export type SymbolSequence = {
+  /** The secret order (symbol ids from lib/portal-symbols). */
+  order: string[]
+  /** Extra glyphs mixed into the grid as decoys. */
+  decoys: string[]
 }
 
 export type WorldEntryConfig = {
@@ -29,6 +37,8 @@ export type WorldEntryConfig = {
   themes?: string[]
   /** Present when mechanic is "join". */
   join?: JoinPattern
+  /** Present when mechanic is "symbols". */
+  symbols?: SymbolSequence
 }
 
 // A hexagonal ring of petals for mirabelle's bloom.
@@ -41,6 +51,15 @@ const BLOOM_POINTS = (() => {
     return { x: Math.round(cx + r * Math.cos(a)), y: Math.round(cy + r * Math.sin(a)) }
   })
 })()
+
+// mia's orbital star chart: five bodies on nested orbits, joined inner-to-outer.
+const ORBITAL_POINTS = [
+  { x: 150, y: 100 }, // the core
+  { x: 150, y: 44 }, // inner body, north
+  { x: 226, y: 118 }, // mid body, east-south
+  { x: 74, y: 132 }, // mid body, west-south
+  { x: 246, y: 44 }, // outer body, far
+]
 
 const DEFAULT: WorldEntryConfig = {
   mechanic: "reflection",
@@ -76,20 +95,16 @@ export const WORLD_ENTRY: Record<string, WorldEntryConfig> = {
   },
   mia: {
     mechanic: "join",
-    ambience: "air",
+    ambience: "astral",
     sells: false,
-    clue: "Draw the line between what's scattered. Connect the three lights in one stroke.",
-    rule: "mia — attention as connection. In a single unbroken stroke, trace a path through the three lights.",
-    themes: ["memory", "the in-between", "quiet", "echo"],
+    clue: "Bring the system online. Lock each body to the next, core outward, until the orbits sync.",
+    rule: "mia — attention as alignment. Trace the five bodies from the core outward in sequence; when the array locks, the gate powers on.",
+    themes: ["signal", "the in-between", "orbit", "echo"],
     join: {
-      points: [
-        { x: 40, y: 150 },
-        { x: 150, y: 50 },
-        { x: 260, y: 140 },
-      ],
-      ordered: false,
-      glyph: "constellation",
-      label: { idle: "connect the lights", active: "keep the line unbroken" },
+      points: ORBITAL_POINTS,
+      ordered: true,
+      glyph: "orbital",
+      label: { idle: "acquire · align the array", active: "syncing orbits…" },
     },
   },
   mirabelle: {
@@ -108,23 +123,15 @@ export const WORLD_ENTRY: Record<string, WorldEntryConfig> = {
     },
   },
   "marked-by-mit": {
-    mechanic: "join",
+    mechanic: "symbols",
     ambience: "ink",
     sells: false,
-    clue: "Draw the mark as it wants to be drawn — one stroke, in order, without lifting.",
-    rule: "marked by Mit — attention as intention. Trace the five points of the sigil in sequence, in one unbroken stroke.",
+    clue: "Read the mark. Touch the signs in the order the keeper set — star, needle, moon, eye.",
+    rule: "marked by Mit — attention as memory. From the shuffled signs, touch in order: white star, silver needle, white moon, black eye.",
     themes: ["white ink", "1:11", "flash", "permanence"],
-    join: {
-      points: [
-        { x: 55, y: 55 },
-        { x: 150, y: 38 },
-        { x: 118, y: 150 },
-        { x: 245, y: 88 },
-        { x: 198, y: 162 },
-      ],
-      ordered: true,
-      glyph: "sigil",
-      label: { idle: "draw the mark", active: "don't lift the line" },
+    symbols: {
+      order: ["white-star", "silver-needle", "white-moon", "black-eye"],
+      decoys: ["red-star", "gold-eye", "silver-moon", "blue-key"],
     },
   },
 }

@@ -1,7 +1,9 @@
-import { notFound, redirect } from "next/navigation"
+import { notFound } from "next/navigation"
 import { ConsultationForm } from "@/components/consultation-form"
 import { ProductGrid } from "@/components/product-grid"
 import { StoreHeader } from "@/components/store-header"
+import { WorldGate } from "@/components/world-entry"
+import { WorldPlaceholder } from "@/components/world-placeholder"
 import { requireAdmin } from "@/lib/admin"
 import { hasWorldGrant } from "@/lib/portal-access"
 import { getCollection } from "@/lib/shopify/products"
@@ -9,11 +11,20 @@ import { getWorld, worldStyle, WORLDS } from "@/lib/worlds"
 
 export const dynamic = "force-dynamic"
 
+// Only these worlds are still landing pages; everything else is a shop.
+const PLACEHOLDER_WORLDS = new Set(["mira", "maya", "mia"])
+
 export default async function WorldStorePage({ params }: { params: Promise<{ handle: string }> }) {
   const { handle } = await params
   const world = getWorld(handle)
   if (!world) notFound()
-  if (!(await hasWorldGrant(handle)) && !(await requireAdmin())) redirect(`/?locked=${handle}`)
+
+  const entered = (await hasWorldGrant(handle)) || (await requireAdmin())
+  // Not yet inside: show this world's own keeper's gate (a distinct act of attention).
+  if (!entered) return <WorldGate world={world} />
+
+  // Inside, but this world is still being written: quiet placeholder.
+  if (PLACEHOLDER_WORLDS.has(handle)) return <WorldPlaceholder world={world} />
 
   const collection = await getCollection(handle)
 
@@ -63,7 +74,7 @@ export default async function WorldStorePage({ params }: { params: Promise<{ han
       <footer className="flex items-end justify-between border-t border-border px-5 py-12 md:px-8">
         <div>
           <p className="font-serif text-3xl">{world.name}</p>
-          <p className="mt-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">One passage of five</p>
+          <p className="mt-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">One passage of {WORLDS.length}</p>
         </div>
         <a href="/" className="text-[10px] uppercase tracking-[0.18em] underline underline-offset-4">Return to the mirrors</a>
       </footer>

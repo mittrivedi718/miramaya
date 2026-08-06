@@ -10,7 +10,6 @@ import {
   threeComponents,
 } from "@json-render/react-three-fiber"
 import { ArrowDown, ArrowRight } from "lucide-react"
-import { PortalPuzzle } from "@/components/portal-puzzle"
 import { SiteLogo } from "@/components/site-logo"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { WORLD_SCENES } from "@/lib/scene/worlds-3d"
@@ -26,7 +25,8 @@ const { registry } = defineRegistry(catalog, {
 })
 
 function sceneSpec(handle: string) {
-  const worldScene = WORLD_SCENES[handle]()
+  const factory = WORLD_SCENES[handle] ?? WORLD_SCENES.mira
+  const worldScene = factory()
   return {
     root: "world-root",
     elements: {
@@ -40,11 +40,10 @@ function sceneSpec(handle: string) {
   }
 }
 
-export function PortalGallery({ sequences }: { sequences: Record<string, string[]> }) {
+export function PortalGallery() {
   const router = useRouter()
   const [activeIndex, setActiveIndex] = useState(0)
   const [entering, setEntering] = useState(false)
-  const [puzzleOpen, setPuzzleOpen] = useState(false)
   const world = WORLDS[activeIndex]
   const spec = useMemo(() => sceneSpec(world.handle), [world.handle])
 
@@ -52,16 +51,13 @@ export function PortalGallery({ sequences }: { sequences: Record<string, string[
     if (!entering) setActiveIndex(index)
   }, [entering])
 
+  // Each world now guards itself: stepping through a mirror carries the visitor
+  // to that world's own keeper's gate.
   const enter = useCallback(() => {
     if (entering) return
-    setPuzzleOpen(true)
-  }, [entering])
-
-  const passThrough = useCallback(() => {
-    setPuzzleOpen(false)
     setEntering(true)
     window.setTimeout(() => router.push(`/store/${world.handle}`), 900)
-  }, [router, world.handle])
+  }, [entering, router, world.handle])
 
   return (
     <main className="relative min-h-svh overflow-hidden bg-background text-foreground">
@@ -81,7 +77,7 @@ export function PortalGallery({ sequences }: { sequences: Record<string, string[
         </a>
         <div className="flex items-center gap-4 text-[11px] uppercase tracking-[0.18em] text-muted-foreground md:gap-5">
           <a href="/about" className="transition-colors hover:text-foreground">About</a>
-          <span className="hidden sm:inline">{String(activeIndex + 1).padStart(2, "0")} / 05</span>
+          <span className="hidden sm:inline">{String(activeIndex + 1).padStart(2, "0")} / {String(WORLDS.length).padStart(2, "0")}</span>
           <ThemeToggle />
         </div>
       </header>
@@ -117,7 +113,7 @@ export function PortalGallery({ sequences }: { sequences: Record<string, string[
           </button>
         </div>
 
-        <div id="portals" className="grid grid-cols-5 border-y border-border backdrop-blur-md">
+        <div id="portals" className="grid grid-cols-3 border-y border-border backdrop-blur-md sm:grid-cols-6">
           {WORLDS.map((item, index) => (
             <button
               key={item.handle}
@@ -132,15 +128,6 @@ export function PortalGallery({ sequences }: { sequences: Record<string, string[
           ))}
         </div>
       </section>
-
-      {puzzleOpen && (
-        <PortalPuzzle
-          handle={world.handle}
-          symbols={sequences[world.handle] ?? []}
-          onUnlocked={passThrough}
-          onCancel={() => setPuzzleOpen(false)}
-        />
-      )}
 
       {entering && (
         <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center bg-background/20">

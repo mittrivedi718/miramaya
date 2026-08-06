@@ -16,6 +16,18 @@ export async function unlockPortal(handle: string, presses: string[]) {
   return { ok: true }
 }
 
+/**
+ * Grants entry to a world once its keeper's mechanic has been completed on the
+ * client. These are temporary landing pages, so completing the act of attention
+ * is the proof — there is no secret to check server-side.
+ */
+export async function enterWorld(handle: string) {
+  const world = getWorld(handle)
+  if (!world) return { ok: false as const }
+  await grantWorld(handle)
+  return { ok: true as const }
+}
+
 export async function redeemShareLink(token: string) {
   const handle = await redeemShareToken(token)
   if (!handle) redirect("/?share=invalid")

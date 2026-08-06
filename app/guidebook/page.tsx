@@ -2,8 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { BrandMark } from "@/components/brand-mark"
 import { hasGuidebookAccess } from "@/lib/guidebook"
-import { getPortalSequences } from "@/lib/portal-access"
-import { SYMBOLS } from "@/lib/portal-symbols"
+import { worldEntry } from "@/lib/world-entry-config"
 import { WORLDS } from "@/lib/worlds"
 import { GuideForm } from "./guide-form"
 
@@ -26,8 +25,8 @@ export default async function GuidebookPage() {
             <p className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground">The white star</p>
             <h1 className="font-serif text-4xl leading-none tracking-tight md:text-5xl">The Guidebook</h1>
             <p className="mx-auto max-w-sm text-sm leading-relaxed text-muted-foreground">
-              Every passage keeps a small remembering. This book holds the answers — the order of symbols that opens each
-              mirror. It is only for the keeper.
+              Every passage asks for one small act of attention. This book holds the answers — the gesture that opens
+              each mirror. It is only for the keeper.
             </p>
           </div>
           <div className="w-full max-w-sm">
@@ -44,9 +43,6 @@ export default async function GuidebookPage() {
     )
   }
 
-  const records = await getPortalSequences()
-  const byHandle = Object.fromEntries(records.map((r) => [r.handle, r.symbolIds]))
-
   return (
     <main className="relative min-h-svh bg-background px-5 py-16 text-foreground md:px-8">
       <div className="mx-auto max-w-3xl">
@@ -55,14 +51,14 @@ export default async function GuidebookPage() {
           <p className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground">The keeper&apos;s guidebook</p>
           <h1 className="font-serif text-5xl leading-none tracking-tight md:text-6xl">How to enter each mirror</h1>
           <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
-            At each portal, a small panel of symbols appears. Touch them in the order written here, and the mirror opens.
-            The grid is shuffled every time, so read by symbol, not position.
+            There is one rule of entry, worn four ways: each keeper asks for a small act of attention. Give the gesture
+            written here, and the mirror opens.
           </p>
         </header>
 
         <ol className="mt-14 flex flex-col gap-4">
           {WORLDS.map((world, index) => {
-            const answer = byHandle[world.handle] ?? []
+            const cfg = worldEntry(world.handle)
             return (
               <li key={world.handle} className="border border-border bg-card p-5 md:p-7">
                 <div className="flex flex-wrap items-baseline justify-between gap-3">
@@ -71,28 +67,7 @@ export default async function GuidebookPage() {
                     Passage {String(index + 1).padStart(2, "0")} · {world.tagline}
                   </span>
                 </div>
-                <ol className="mt-5 flex flex-wrap gap-3">
-                  {answer.length === 0 && (
-                    <li className="text-sm text-muted-foreground">This passage is resting — no sequence set.</li>
-                  )}
-                  {answer.map((symbolId, step) => {
-                    const symbol = SYMBOLS[symbolId as keyof typeof SYMBOLS]
-                    return (
-                      <li
-                        key={`${symbolId}-${step}`}
-                        className="flex items-center gap-3 border border-border bg-background px-4 py-3"
-                      >
-                        <span className="font-serif text-lg text-muted-foreground">{step + 1}</span>
-                        <span
-                          className="size-3 rounded-full"
-                          style={{ backgroundColor: symbol?.color ?? "var(--foreground)" }}
-                          aria-hidden="true"
-                        />
-                        <span className="text-sm capitalize">{symbol?.label ?? symbolId}</span>
-                      </li>
-                    )
-                  })}
-                </ol>
+                <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{cfg.rule}</p>
               </li>
             )
           })}
@@ -100,7 +75,7 @@ export default async function GuidebookPage() {
 
         <div className="mt-14 flex flex-col items-center gap-4 border-t border-border pt-10 text-center">
           <p className="text-sm text-muted-foreground">
-            The keeper may also change these sequences and share private doors from the studio.
+            The keeper may also share private doors from the studio.
           </p>
           <div className="flex items-center gap-5">
             <Link href="/admin" className="text-[11px] uppercase tracking-[0.18em] underline underline-offset-4">

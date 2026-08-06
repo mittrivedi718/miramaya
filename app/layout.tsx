@@ -15,7 +15,7 @@ const cormorant = Cormorant_Garamond({
 
 export const metadata: Metadata = {
   title: { default: "MiraMaya", template: "%s · MiraMaya" },
-  description: "Five portals. Five collections. Objects from mira, maya, gaia, mirabelle, and marked by Mit.",
+  description: "A gallery of mirrors. Each one a world with its own way of being entered — mira, maya, gaia, mia, and more.",
   icons: {
     icon: [
       { url: "/brand/favicon-cream.png", media: "(prefers-color-scheme: dark)" },

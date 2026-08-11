@@ -44,6 +44,7 @@ const HELIX_PHOTOS: HelixPhoto[] = [
   { src: "/maya/helix/uploads/u20.jpeg", date: "2020-11-01", year: "2020", location: "", caption: "shedding", alt: "Mirror selfie in a yellow-and-brown snake-print mesh tank, wet hair" },
   { src: "/maya/helix/uploads/u33.jpeg", date: "2021-02-01", year: "2021", location: "", caption: "the spine hardens", alt: "Ornate gold mirror, black PVC corset with a braided harness" },
   { src: "/maya/helix/uploads/u07.jpeg", date: "2021-05-01", year: "2021", location: "", caption: "not from here", alt: "Hallway mirror selfie wearing a green alien mask, shirtless" },
+  { src: "/maya/helix/uploads/u06.jpeg", date: "2021-07-01", year: "2021", location: "", caption: "a different animal", alt: "A raccoon walking across grass" },
   { src: "/maya/helix/uploads/u34.jpeg", date: "2021-09-01", year: "2021", location: "", caption: "walking it out", alt: "Street profile against a corrugated wall, camo shorts and a long braid" },
   { src: "/maya/helix/uploads/u25.jpeg", date: "2021-12-01", year: "2021", location: "", caption: "the mane", alt: "Park at golden hour, long wavy hair and flame pendants" },
   { src: "/maya/helix/uploads/u12.jpeg", date: "2022-02-01", year: "2022", location: "", caption: "gilded", alt: "Club close-up with orange eye makeup and an orange macramé harness" },

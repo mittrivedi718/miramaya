@@ -431,6 +431,17 @@
     100% { transform: rotate(360deg); }
   }
 
+  /* mia — the meetMIA emblem breathing at the summit of the path */
+  @keyframes mia-emblem-breathe {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); filter: brightness(0.95); }
+    50% { transform: translate(-50%, -50%) scale(1.04); filter: brightness(1.15); }
+  }
+  @keyframes mia-cross-bloom {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
+    35% { opacity: 1; }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(9); }
+  }
+
   /* Monument Valley-ish soft entrances: content rises with a gentle perspective. */
   .mv-rise {
     animation: mv-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;

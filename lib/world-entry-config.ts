@@ -1,6 +1,6 @@
 // One underlying rule of entry — "each keeper asks for a small act of attention" —
 // expressed a different way per world. The guidebook explains all of them.
-export type Mechanic = "reflection" | "refraction" | "earth" | "join" | "symbols"
+export type Mechanic = "reflection" | "refraction" | "earth" | "join" | "symbols" | "pilgrimage"
 export type Ambience = "water" | "light" | "earth" | "air" | "bloom" | "ink" | "astral"
 
 /** A "joining" gesture: connect points into a shape. Worn several ways. */
@@ -39,6 +39,8 @@ export type WorldEntryConfig = {
   join?: JoinPattern
   /** Present when mechanic is "symbols". */
   symbols?: SymbolSequence
+  /** When set, completing the gate crosses over to this external world instead of revealing an inner page. */
+  redirect?: string
 }
 
 // A hexagonal ring of petals for mirabelle's bloom.
@@ -51,15 +53,6 @@ const BLOOM_POINTS = (() => {
     return { x: Math.round(cx + r * Math.cos(a)), y: Math.round(cy + r * Math.sin(a)) }
   })
 })()
-
-// mia's orbital star chart: five bodies on nested orbits, joined inner-to-outer.
-const ORBITAL_POINTS = [
-  { x: 150, y: 100 }, // the core
-  { x: 150, y: 44 }, // inner body, north
-  { x: 226, y: 118 }, // mid body, east-south
-  { x: 74, y: 132 }, // mid body, west-south
-  { x: 246, y: 44 }, // outer body, far
-]
 
 const DEFAULT: WorldEntryConfig = {
   mechanic: "reflection",
@@ -94,18 +87,13 @@ export const WORLD_ENTRY: Record<string, WorldEntryConfig> = {
     rule: "gaia — attention as making. Gather the three stones into a cairn; when it stands, the ground opens.",
   },
   mia: {
-    mechanic: "join",
+    mechanic: "pilgrimage",
     ambience: "astral",
     sells: false,
-    clue: "Bring the system online. Lock each body to the next, core outward, until the orbits sync.",
-    rule: "mia — attention as alignment. Trace the five bodies from the core outward in sequence; when the array locks, the gate powers on.",
-    themes: ["signal", "the in-between", "orbit", "echo"],
-    join: {
-      points: ORBITAL_POINTS,
-      ordered: true,
-      glyph: "orbital",
-      label: { idle: "acquire · align the array", active: "syncing orbits…" },
-    },
+    redirect: "https://meetmia.vercel.app/",
+    clue: "A traveller waits at the water's edge. Walk them up, step by step, to the mirror — and beyond, to meet MIA.",
+    rule: "MIA — attention as the journey. Guide the small traveller along the path, one platform at a time, until they reach the mirror and cross into MIA.",
+    themes: ["signal", "the in-between", "reflection", "MIA"],
   },
   mirabelle: {
     mechanic: "join",

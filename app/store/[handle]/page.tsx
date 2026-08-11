@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation"
 import { ConsultationForm } from "@/components/consultation-form"
+import { MayaGallery } from "@/components/maya-gallery"
 import { ProductGrid } from "@/components/product-grid"
 import { StoreHeader } from "@/components/store-header"
 import { WorldGate } from "@/components/world-entry"
@@ -12,7 +13,7 @@ import { getWorld, worldStyle, WORLDS } from "@/lib/worlds"
 export const dynamic = "force-dynamic"
 
 // Only these worlds are still landing pages; everything else is a shop.
-const PLACEHOLDER_WORLDS = new Set(["mira", "maya"])
+const PLACEHOLDER_WORLDS = new Set(["mira"])
 // These worlds cross over to somewhere else entirely, so the gate is the whole page.
 const REDIRECT_WORLDS = new Set(["mia"])
 
@@ -24,6 +25,9 @@ export default async function WorldStorePage({ params }: { params: Promise<{ han
   const entered = !REDIRECT_WORLDS.has(handle) && ((await hasWorldGrant(handle)) || (await requireAdmin()))
   // Not yet inside: show this world's own keeper's gate (a distinct act of attention).
   if (!entered) return <WorldGate world={world} />
+
+  // maya is a photography world: a small gallery of albums.
+  if (handle === "maya") return <MayaGallery world={world} />
 
   // Inside, but this world is still being written: quiet placeholder.
   if (PLACEHOLDER_WORLDS.has(handle)) return <WorldPlaceholder world={world} />

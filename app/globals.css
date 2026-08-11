@@ -453,9 +453,34 @@
     100% { opacity: 1; transform: perspective(900px) translate3d(0, 0, 0) rotateX(0deg); }
   }
 
+  /* maya — the interstellar helix: energy flowing down the two strands */
+  .helix-strand {
+    fill: none;
+    stroke: color-mix(in oklab, var(--primary) 65%, transparent);
+    stroke-width: 1.5;
+    filter: drop-shadow(0 0 4px color-mix(in oklab, var(--primary) 60%, transparent));
+  }
+  .helix-strand--flow {
+    stroke: color-mix(in oklab, white 70%, var(--primary));
+    stroke-width: 2;
+    stroke-dasharray: 2 16;
+    animation: helix-flow 2.4s linear infinite;
+  }
+  .helix-rung {
+    stroke: color-mix(in oklab, var(--primary) 40%, transparent);
+    stroke-width: 1;
+  }
+  @keyframes helix-flow {
+    to { stroke-dashoffset: -180; }
+  }
+  .helix-card {
+    will-change: transform, opacity;
+    transform: translate(-50%, -50%);
+  }
   @media (prefers-reduced-motion: reduce) {
     .world-bg > span,
     .world-bg--astral > span,
+    .helix-strand--flow,
     .mv-rise { animation: none; }
     .mv-rise { opacity: 1; transform: none; }
   }

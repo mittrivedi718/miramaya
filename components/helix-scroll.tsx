@@ -217,7 +217,7 @@ export function HelixScroll({ world }: { world: World }) {
                   <figcaption className="mt-3 text-center">
                     <p className="font-serif text-lg leading-tight">{photo.caption}</p>
                     <p className="mt-1 text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-                      {photo.year} · {photo.location}
+                      {photo.location ? `${photo.year} · ${photo.location}` : photo.year}
                     </p>
                   </figcaption>
                 </figure>

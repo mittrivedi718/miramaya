@@ -55,7 +55,13 @@ export function WorldGate({ world }: { world: World }) {
           entering ? "scale-105 opacity-0" : "scale-100 opacity-100"
         }`}
       >
-        <p className="mv-rise mb-2 font-serif text-5xl lowercase tracking-tight md:text-7xl">{world.name}</p>
+        <p
+          className={`mv-rise mb-2 font-serif text-5xl tracking-tight md:text-7xl ${
+            world.name === world.name.toUpperCase() ? "normal-case" : "lowercase"
+          }`}
+        >
+          {world.name}
+        </p>
         <p className="mv-rise mv-rise-2 mb-12 max-w-md text-pretty text-sm leading-relaxed text-muted-foreground md:text-base">
           {cfg.clue}
         </p>
@@ -77,7 +83,7 @@ export function WorldGate({ world }: { world: World }) {
       {entering && (
         <div className="pointer-events-none absolute inset-0 z-20 grid place-items-center bg-background/30">
           <p className="animate-pulse text-[10px] uppercase tracking-[0.35em]">
-            {cfg.redirect ? "crossing over to meet mia" : `crossing into ${world.name}`}
+            {cfg.redirect ? "crossing over to meet MIA" : `crossing into ${world.name}`}
           </p>
         </div>
       )}

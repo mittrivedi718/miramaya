@@ -92,7 +92,7 @@ export const WORLD_ENTRY: Record<string, WorldEntryConfig> = {
     sells: false,
     redirect: "https://meetmia.vercel.app/",
     clue: "A traveller waits at the water's edge. Walk them up, step by step, to the mirror — and beyond, to meet MIA.",
-    rule: "mia — attention as the journey. Guide the small traveller along the path, one platform at a time, until they reach the mirror and cross into MIA.",
+    rule: "MIA — attention as the journey. Guide the small traveller along the path, one platform at a time, until they reach the mirror and cross into MIA.",
     themes: ["signal", "the in-between", "reflection", "MIA"],
   },
   mirabelle: {

@@ -118,11 +118,11 @@ export const WORLDS: World[] = [
   },
   {
     handle: "mia",
-    name: "mia",
+    name: "MIA",
     tagline: "the space between",
     whisper: "What's missing leaves a shape.",
     intro:
-      "mia is the space between the other rooms — the pause, the echo, the thing not yet said. It keeps what memory keeps: quiet, in-between, and still forming.",
+      "MIA is the space between the other rooms — the pause, the echo, the thing not yet said. It keeps what memory keeps: quiet, in-between, and still forming.",
     keywords: ["echo", "between", "quiet", "trace"],
     frameColor: "#b9c0d6",
     frameMetalness: 0.6,

@@ -12,14 +12,16 @@ import { getWorld, worldStyle, WORLDS } from "@/lib/worlds"
 export const dynamic = "force-dynamic"
 
 // Only these worlds are still landing pages; everything else is a shop.
-const PLACEHOLDER_WORLDS = new Set(["mira", "maya", "mia"])
+const PLACEHOLDER_WORLDS = new Set(["mira", "maya"])
+// These worlds cross over to somewhere else entirely, so the gate is the whole page.
+const REDIRECT_WORLDS = new Set(["mia"])
 
 export default async function WorldStorePage({ params }: { params: Promise<{ handle: string }> }) {
   const { handle } = await params
   const world = getWorld(handle)
   if (!world) notFound()
 
-  const entered = (await hasWorldGrant(handle)) || (await requireAdmin())
+  const entered = !REDIRECT_WORLDS.has(handle) && ((await hasWorldGrant(handle)) || (await requireAdmin()))
   // Not yet inside: show this world's own keeper's gate (a distinct act of attention).
   if (!entered) return <WorldGate world={world} />
 

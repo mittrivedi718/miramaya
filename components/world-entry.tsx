@@ -18,12 +18,23 @@ export function WorldGate({ world }: { world: World }) {
   const onSolved = useCallback(() => {
     setEntering((already) => {
       if (already) return already
+      // Some worlds cross over to another place entirely (e.g. the meetMIA app).
+      if (cfg.redirect) {
+        window.setTimeout(() => {
+          try {
+            ;(window.top ?? window).location.href = cfg.redirect as string
+          } catch {
+            window.location.href = cfg.redirect as string
+          }
+        }, 950)
+        return true
+      }
       void enterWorld(world.handle).then(() => {
         window.setTimeout(() => router.refresh(), 750)
       })
       return true
     })
-  }, [router, world.handle])
+  }, [cfg.redirect, router, world.handle])
 
   return (
     <main
@@ -55,6 +66,7 @@ export function WorldGate({ world }: { world: World }) {
           {cfg.mechanic === "earth" && <EarthGate onSolved={onSolved} />}
           {cfg.mechanic === "join" && cfg.join && <JoinGate onSolved={onSolved} pattern={cfg.join} />}
           {cfg.mechanic === "symbols" && cfg.symbols && <SymbolGate onSolved={onSolved} sequence={cfg.symbols} />}
+          {cfg.mechanic === "pilgrimage" && <PilgrimageGate onSolved={onSolved} />}
         </div>
 
         <p className="mv-rise mv-rise-3 mt-10 text-[10px] uppercase tracking-[0.24em] text-muted-foreground/70">
@@ -64,7 +76,9 @@ export function WorldGate({ world }: { world: World }) {
 
       {entering && (
         <div className="pointer-events-none absolute inset-0 z-20 grid place-items-center bg-background/30">
-          <p className="animate-pulse text-[10px] uppercase tracking-[0.35em]">crossing into {world.name}</p>
+          <p className="animate-pulse text-[10px] uppercase tracking-[0.35em]">
+            {cfg.redirect ? "crossing over to meet mia" : `crossing into ${world.name}`}
+          </p>
         </div>
       )}
     </main>
@@ -494,4 +508,218 @@ function shuffle<T>(arr: T[]): T[] {
     ;[a[i], a[j]] = [a[j], a[i]]
   }
   return a
+}
+
+/* ---- mia: attention as the journey. Walk the traveller to the mirror. -------
+   A small neutral figurine (Monument Valley) climbs an isometric path of
+   platforms, one step at a time, toward the meetMIA emblem. Reaching the
+   mirror crosses over to the meetMIA app.                                */
+const PILGRIM_PATH = [
+  { x: 46, y: 206 },
+  { x: 112, y: 182 },
+  { x: 178, y: 158 },
+  { x: 126, y: 118 },
+  { x: 150, y: 66 }, // the mirror
+]
+
+function PilgrimageGate({ onSolved }: { onSolved: () => void }) {
+  const last = PILGRIM_PATH.length - 1
+  const [step, setStep] = useState(0)
+  const [crossed, setCrossed] = useState(false)
+  const done = useRef(false)
+
+  const advanceTo = useCallback(
+    (i: number) => {
+      if (done.current) return
+      if (i !== step + 1) return // one platform at a time, in order
+      setStep(i)
+      if (i === last) {
+        done.current = true
+        setCrossed(true)
+        window.setTimeout(onSolved, 950)
+      }
+    },
+    [step, last, onSolved],
+  )
+
+  const fig = PILGRIM_PATH[step]
+  const litTrail = PILGRIM_PATH.slice(0, step + 1).map((p) => `${p.x},${p.y}`).join(" ")
+  const fullGuide = PILGRIM_PATH.map((p) => `${p.x},${p.y}`).join(" ")
+  const nextNode = step < last ? PILGRIM_PATH[step + 1] : null
+
+  const pct = (v: number, span: number) => `${(v / span) * 100}%`
+
+  return (
+    <div className="flex flex-col items-center gap-4">
+      <div
+        className="relative w-[min(88vw,23rem)] touch-none select-none"
+        style={{ aspectRatio: "300 / 240" }}
+        role="group"
+        aria-label="Walk the traveller along the path to the mirror"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (["Enter", " ", "ArrowUp", "ArrowRight"].includes(e.key)) {
+            e.preventDefault()
+            advanceTo(step + 1)
+          }
+        }}
+      >
+        <svg viewBox="0 0 300 240" className="absolute inset-0 h-full w-full" aria-hidden="true">
+          {/* the route ahead, faint and dashed */}
+          <polyline
+            points={fullGuide}
+            fill="none"
+            stroke="currentColor"
+            strokeOpacity="0.14"
+            strokeWidth="1"
+            strokeDasharray="2 5"
+            strokeLinecap="round"
+          />
+          {/* the walked path, glowing */}
+          {step > 0 && (
+            <polyline
+              points={litTrail}
+              fill="none"
+              stroke="var(--primary)"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{ filter: "drop-shadow(0 0 3px var(--primary))" }}
+            />
+          )}
+
+          {/* isometric platforms (all but the mirror node) */}
+          {PILGRIM_PATH.slice(0, last).map((p, i) => {
+            const w = 24
+            const h = 9
+            const depth = 13
+            const reached = i <= step
+            return (
+              <g key={i}>
+                {/* side faces for depth */}
+                <path
+                  d={`M ${p.x - w} ${p.y} L ${p.x} ${p.y + h} L ${p.x} ${p.y + h + depth} L ${p.x - w} ${p.y + depth} Z`}
+                  fill="color-mix(in oklab, var(--primary) 16%, #05060d)"
+                />
+                <path
+                  d={`M ${p.x + w} ${p.y} L ${p.x} ${p.y + h} L ${p.x} ${p.y + h + depth} L ${p.x + w} ${p.y + depth} Z`}
+                  fill="color-mix(in oklab, var(--primary) 9%, #05060d)"
+                />
+                {/* top face */}
+                <path
+                  d={`M ${p.x} ${p.y - h} L ${p.x + w} ${p.y} L ${p.x} ${p.y + h} L ${p.x - w} ${p.y} Z`}
+                  fill={reached ? "color-mix(in oklab, var(--primary) 42%, #05060d)" : "color-mix(in oklab, var(--primary) 22%, #05060d)"}
+                  stroke="var(--primary)"
+                  strokeOpacity={reached ? 0.6 : 0.28}
+                  strokeWidth="0.75"
+                />
+              </g>
+            )
+          })}
+
+          {/* invitation ring on the next platform */}
+          {nextNode && (
+            <circle
+              cx={nextNode.x}
+              cy={nextNode.y}
+              r="12"
+              fill="none"
+              stroke="var(--primary)"
+              strokeWidth="1"
+              className="animate-ping"
+              style={{ transformOrigin: `${nextNode.x}px ${nextNode.y}px` }}
+            />
+          )}
+
+          {/* ripples under the mirror */}
+          {[0, 1, 2].map((r) => (
+            <ellipse
+              key={r}
+              cx={PILGRIM_PATH[last].x}
+              cy={PILGRIM_PATH[last].y + 34}
+              rx={20 + r * 12}
+              ry={4 + r * 2}
+              fill="none"
+              stroke="var(--primary)"
+              strokeOpacity={0.26 - r * 0.07}
+              strokeWidth="0.8"
+            />
+          ))}
+
+          {/* the traveller — a small neutral figure that walks between platforms */}
+          <g
+            style={{
+              transform: `translate(${fig.x}px, ${fig.y - 9}px)`,
+              transition: "transform 0.6s cubic-bezier(0.22, 1, 0.36, 1)",
+              opacity: crossed ? 0 : 1,
+              filter: "drop-shadow(0 0 4px color-mix(in oklab, var(--primary) 70%, white))",
+            }}
+          >
+            <ellipse cx="0" cy="1" rx="7" ry="2.5" fill="#000000" opacity="0.3" />
+            <path d="M -3.4 0 L 3.4 0 L 2.4 -11 L -2.4 -11 Z" fill="#f1f2f8" />
+            <circle cx="0" cy="-14.5" r="3.3" fill="#f1f2f8" />
+          </g>
+        </svg>
+
+        {/* the meetMIA emblem as the mirror at the summit; screen-blend drops its black field */}
+        <img
+          src="/mia/meetmia-emblem.jpeg"
+          alt="The MIA emblem — an eye holding a radiant M, reflected in water"
+          className="pointer-events-none absolute"
+          style={{
+            left: pct(PILGRIM_PATH[last].x, 300),
+            top: pct(PILGRIM_PATH[last].y, 240),
+            width: "34%",
+            transform: `translate(-50%, -50%) scale(${crossed ? 1.35 : 1})`,
+            mixBlendMode: "screen",
+            transition: "transform 0.9s cubic-bezier(0.22, 1, 0.36, 1), filter 0.9s ease",
+            filter: crossed ? "brightness(1.8)" : "brightness(1)",
+            animation: crossed ? "none" : "mia-emblem-breathe 6s ease-in-out infinite",
+          }}
+        />
+
+        {/* white bloom as the traveller crosses through */}
+        {crossed && (
+          <span
+            className="pointer-events-none absolute rounded-full"
+            style={{
+              left: pct(PILGRIM_PATH[last].x, 300),
+              top: pct(PILGRIM_PATH[last].y, 240),
+              width: "8%",
+              aspectRatio: "1",
+              transform: "translate(-50%, -50%)",
+              background: "radial-gradient(circle, #ffffff, transparent 70%)",
+              animation: "mia-cross-bloom 0.95s ease-out forwards",
+            }}
+          />
+        )}
+
+        {/* touch targets: only the next platform (and finally the mirror) is live */}
+        {PILGRIM_PATH.map((p, i) => {
+          if (i === 0 || i !== step + 1) return null
+          const isMirror = i === last
+          return (
+            <button
+              key={i}
+              type="button"
+              onClick={() => advanceTo(i)}
+              aria-label={isMirror ? "Step through the mirror to meet MIA" : `Walk the traveller to the next platform`}
+              className="absolute grid size-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+              style={{ left: pct(p.x, 300), top: pct(p.y, 240) }}
+            />
+          )
+        })}
+      </div>
+
+      <span className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground">
+        {crossed
+          ? "she is waiting…"
+          : step === 0
+            ? "tap the waking stone"
+            : step === last - 1
+              ? "step through the mirror"
+              : `${step} of ${last} · keep walking`}
+      </span>
+    </div>
+  )
 }

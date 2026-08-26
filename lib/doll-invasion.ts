@@ -77,7 +77,7 @@ export type DollInvasionSignup = {
 
 /** Every Doll Invasion signup, newest first. Admin-only. */
 export async function listSignups(): Promise<DollInvasionSignup[]> {
-  await ensureContactsTable()
+  await ensureTable()
   return db
     .select({
       id: dollInvasionContacts.id,

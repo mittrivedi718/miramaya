@@ -4,7 +4,7 @@
 // Email is a best-effort notification on top: if RESEND_API_KEY is missing or the
 // send fails, the visitor still gets a success state and the row is still saved.
 
-import { eq, sql } from "drizzle-orm"
+import { desc, eq, sql } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { dollInvasionContacts } from "@/lib/db/schema"
 
@@ -62,6 +62,35 @@ export async function saveContact(contact: DollInvasionContact): Promise<string>
     })
     .returning({ id: dollInvasionContacts.id })
   return row.id
+}
+
+export type DollInvasionSignup = {
+  id: string
+  firstName: string
+  lastName: string | null
+  email: string
+  instagram: string | null
+  message: string | null
+  emailedAt: Date | null
+  createdAt: Date
+}
+
+/** Every Doll Invasion signup, newest first. Admin-only. */
+export async function listSignups(): Promise<DollInvasionSignup[]> {
+  await ensureContactsTable()
+  return db
+    .select({
+      id: dollInvasionContacts.id,
+      firstName: dollInvasionContacts.firstName,
+      lastName: dollInvasionContacts.lastName,
+      email: dollInvasionContacts.email,
+      instagram: dollInvasionContacts.instagram,
+      message: dollInvasionContacts.message,
+      emailedAt: dollInvasionContacts.emailedAt,
+      createdAt: dollInvasionContacts.createdAt,
+    })
+    .from(dollInvasionContacts)
+    .orderBy(desc(dollInvasionContacts.createdAt))
 }
 
 /** Best-effort email notification. Never throws. */
@@ -127,23 +156,41 @@ export async function notifyOwner(id: string, contact: DollInvasionContact): Pro
   </div>
 </body></html>`
 
+  // Send from the real brand domain, which is what actually keeps these out of
+  // spam. Resend rejects an unverified domain, so we fall back to the shared
+  // sandbox sender: mail still arrives (in spam) while DNS is pending, and it
+  // silently upgrades to the branded sender the moment meetmit.me verifies.
+  const brandedFrom = process.env.DOLL_FROM_EMAIL?.trim() || "Doll Invasion <hello@meetmit.me>"
+  const fallbackFrom = "Doll Invasion <onboarding@resend.dev>"
+
   try {
     const { Resend } = await import("resend")
     const resend = new Resend(apiKey)
-    const { error } = await resend.emails.send({
-      from: process.env.DOLL_FROM_EMAIL?.trim() || "Doll Invasion <onboarding@resend.dev>",
-      to: notifyAddress(),
-      replyTo: contact.email,
-      subject: `Doll Invasion signup: ${fullName}`,
-      text,
-      html,
-      // Keeps Gmail from collapsing separate signups into one thread.
-      headers: { "X-Entity-Ref-ID": id },
-    })
+
+    const send = (from: string) =>
+      resend.emails.send({
+        from,
+        to: notifyAddress(),
+        replyTo: contact.email,
+        subject: `Doll Invasion signup: ${fullName}`,
+        text,
+        html,
+        // Keeps Gmail from collapsing separate signups into one thread.
+        headers: { "X-Entity-Ref-ID": id },
+      })
+
+    let { error } = await send(brandedFrom)
+
+    if (error && brandedFrom !== fallbackFrom) {
+      console.log(`[v0] Branded sender refused (${error.message}) — retrying via sandbox sender`)
+      ;({ error } = await send(fallbackFrom))
+    }
+
     if (error) {
       console.log("[v0] Resend rejected the notification:", error.message)
       return
     }
+
     await db
       .update(dollInvasionContacts)
       .set({ emailedAt: new Date() })

@@ -41,7 +41,10 @@ export function AdminConsole({ worlds, sequences, links, guidebookText }: { worl
       <main className="p-5 md:p-8 lg:p-12">
         <header className="flex flex-col justify-between gap-4 border-b border-border pb-8 md:flex-row md:items-end">
           <div><p className="text-[10px] uppercase tracking-[0.26em] text-muted-foreground">{world.tagline}</p><h2 className="mt-2 font-serif text-6xl tracking-tight">{world.name}</h2></div>
-          <a href={`/store/${world.handle}`} className="text-[10px] uppercase tracking-[0.18em] underline underline-offset-4">Preview store</a>
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+            <a href="/admin/signups" className="text-[10px] uppercase tracking-[0.18em] underline underline-offset-4">Doll Invasion signups</a>
+            <a href={`/store/${world.handle}`} className="text-[10px] uppercase tracking-[0.18em] underline underline-offset-4">Preview store</a>
+          </div>
         </header>
 
         <div className="py-10">

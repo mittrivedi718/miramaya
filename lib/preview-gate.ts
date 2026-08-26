@@ -17,11 +17,13 @@ export const PREVIEW_PATH = "/preview/doll-invasion"
 const PREVIEW_MESSAGE = "miramaya-doll-invasion-preview-v1"
 
 /**
- * Normalize a passphrase so "  Doll Invasion 26 " === "doll invasion 26".
- * Trims, lowercases, and collapses runs of whitespace to a single space.
+ * Normalize a passphrase so every plausible typing of it matches:
+ * "dollinvasion26", "Doll Invasion 26" and "  DOLL INVASION 26 " are all equal.
+ * Lowercases and strips whitespace entirely, so a guest who adds spaces (or
+ * whose phone auto-capitalizes) still gets in.
  */
 function normalize(value: string): string {
-  return value.trim().toLowerCase().replace(/\s+/g, " ")
+  return value.toLowerCase().replace(/\s+/g, "")
 }
 
 /**
@@ -31,10 +33,10 @@ function normalize(value: string): string {
  */
 export function acceptedPreviewPasswords(): string[] {
   const configured = process.env.DOLL_INVASION_PASSWORD?.trim()
-  // The page is titled "Doll Invasion 2026", so people naturally type the full
+  // The page is titled "Doll Invasion 2026", so some guests will type the full
   // year. Both forms are accepted: guessing the year wrong is not a security
   // boundary, and a locked-out invited guest is the real failure here.
-  const base = ["doll invasion 26", "doll invasion 2026"]
+  const base = ["dollinvasion26", "dollinvasion2026"]
   if (!configured) return base
   const extra = normalize(configured)
   return base.includes(extra) ? base : [extra, ...base]

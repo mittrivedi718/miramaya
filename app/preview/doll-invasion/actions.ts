@@ -2,6 +2,7 @@
 
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
+import { after } from "next/server"
 import { isPreviewPassword, PREVIEW_COOKIE, PREVIEW_PATH, previewToken } from "@/lib/preview-gate"
 import { notifyOwner, saveContact } from "@/lib/doll-invasion"
 
@@ -82,8 +83,10 @@ export async function submitReflection(
     return { ok: false, error: "Something went still on our end. Please try again in a moment." }
   }
 
-  // Email is best-effort; a failed send must never lose a saved lead.
-  await notifyOwner(id, contact)
+  // Email is best-effort and must never make the visitor wait: a cold Resend
+  // client can take many seconds, and the lead is already safely saved. `after`
+  // runs the send once the response has been flushed.
+  after(() => notifyOwner(id, contact))
 
   return { ok: true }
 }

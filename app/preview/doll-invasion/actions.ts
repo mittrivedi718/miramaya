@@ -25,8 +25,12 @@ export async function unlockPreview(
   const store = await cookies()
   store.set(PREVIEW_COOKIE, await previewToken(), {
     httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    // The v0 preview renders this page inside a cross-origin iframe, where a
+    // `lax` cookie is dropped by the browser — the unlock appeared to fail even
+    // though the phrase was correct. `none` + `secure` survives the iframe and
+    // is still safe: the value is an HMAC that cannot be forged.
+    sameSite: "none",
+    secure: true,
     path: "/",
     maxAge: 60 * 60 * 24 * 14, // 14 days — a preview, not a residence
   })

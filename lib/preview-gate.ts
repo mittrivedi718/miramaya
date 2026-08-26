@@ -31,7 +31,10 @@ function normalize(value: string): string {
  */
 export function acceptedPreviewPasswords(): string[] {
   const configured = process.env.DOLL_INVASION_PASSWORD?.trim()
-  const base = ["doll invasion 26"]
+  // The page is titled "Doll Invasion 2026", so people naturally type the full
+  // year. Both forms are accepted: guessing the year wrong is not a security
+  // boundary, and a locked-out invited guest is the real failure here.
+  const base = ["doll invasion 26", "doll invasion 2026"]
   if (!configured) return base
   const extra = normalize(configured)
   return base.includes(extra) ? base : [extra, ...base]

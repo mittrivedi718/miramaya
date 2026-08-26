@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { GATE_COOKIE, gateToken, isGateEnabled } from "@/lib/site-gate"
+import { PREVIEW_COOKIE, PREVIEW_PATH, previewToken } from "@/lib/preview-gate"
 
 // Paths that must always be reachable, even when the view gate is locked:
-// - /enter          the unlock page itself
-// - /api/auth       owner login (Better Auth) must keep working
-const ALWAYS_ALLOW = ["/enter", "/api/auth"]
+// - /enter                    the unlock page itself
+// - /api/auth                 owner login (Better Auth) must keep working
+// - /preview/doll-invasion    private preview; gates itself with its own password
+const ALWAYS_ALLOW = ["/enter", "/api/auth", PREVIEW_PATH]
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -33,6 +35,16 @@ export async function proxy(request: NextRequest) {
   const cookie = request.cookies.get(GATE_COOKIE)?.value
   const expected = await gateToken()
   if (cookie && cookie === expected) return NextResponse.next()
+
+  // Preview-only visitors (Doll Invasion password) never get full-site access.
+  // Anywhere else they try to go, we quietly return them to the preview.
+  const previewCookie = request.cookies.get(PREVIEW_COOKIE)?.value
+  if (previewCookie && previewCookie === (await previewToken())) {
+    const back = request.nextUrl.clone()
+    back.pathname = PREVIEW_PATH
+    back.search = ""
+    return NextResponse.redirect(back)
+  }
 
   const url = request.nextUrl.clone()
   url.pathname = "/enter"

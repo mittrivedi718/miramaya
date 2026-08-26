@@ -1,10 +1,15 @@
 "use client"
 
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { Star } from "lucide-react"
 
 export function AdminStar() {
   const router = useRouter()
+  const pathname = usePathname()
+
+  // The private preview is a sealed room — no doors out of it.
+  if (pathname?.startsWith("/preview/")) return null
+
   return (
     <button
       type="button"

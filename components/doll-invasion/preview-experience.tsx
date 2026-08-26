@@ -102,7 +102,7 @@ export function PreviewExperience() {
   }, [paused])
 
   return (
-    <div ref={root} className="relative">
+    <div ref={root} className="di-world">
       {/* 1 · ENTRY — near-empty, smoke thinning into a ripple */}
       <button
         type="button"

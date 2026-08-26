@@ -10,7 +10,7 @@ export function PreviewUnlock() {
   const [state, formAction, pending] = useActionState(unlockPreview, initial)
 
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center gap-8 px-6 py-16">
+    <main className="di-world flex flex-col items-center justify-center gap-8 px-6 py-16">
       <SmokeMotif size={120} />
 
       <div className="flex flex-col items-center gap-3 text-center">

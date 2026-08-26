@@ -72,19 +72,60 @@ export async function notifyOwner(id: string, contact: DollInvasionContact): Pro
     return
   }
 
-  const timestamp = new Date().toISOString()
-  const lines = [
-    `Time:       ${timestamp}`,
-    `Source:     ${SOURCE_LABEL}`,
+  const when = new Date().toLocaleString("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "America/New_York",
+  })
+
+  const fullName = [contact.firstName, contact.lastName].filter(Boolean).join(" ")
+
+  const text = [
+    `${fullName} just signed up from the Doll Invasion 2026 preview.`,
     "",
-    `First name: ${contact.firstName}`,
-    `Last name:  ${contact.lastName || "—"}`,
-    `Email:      ${contact.email}`,
-    `Instagram:  ${contact.instagram || "—"}`,
+    `Name:      ${fullName}`,
+    `Email:     ${contact.email}`,
+    `Instagram: ${contact.instagram || "not given"}`,
+    `Time:      ${when} ET`,
     "",
     "Message:",
-    contact.message || "—",
-  ]
+    contact.message || "(none)",
+    "",
+    "Reply to this email to answer them directly.",
+  ].join("\n")
+
+  // A matching HTML part is a meaningful deliverability signal: text-only mail
+  // from a shared sending domain is scored more harshly by Gmail.
+  const esc = (value: string) =>
+    value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+
+  const row = (label: string, value: string) => `
+    <tr>
+      <td style="padding:6px 16px 6px 0;color:#6f6d65;font-size:13px;white-space:nowrap;vertical-align:top;">${label}</td>
+      <td style="padding:6px 0;color:#1b1c1a;font-size:15px;">${value}</td>
+    </tr>`
+
+  const html = `<!doctype html>
+<html><body style="margin:0;padding:24px;background:#f4f2ec;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+  <div style="max-width:520px;margin:0 auto;background:#fbfaf6;border:1px solid #d7d2c6;border-radius:14px;padding:28px;">
+    <p style="margin:0 0 4px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#7f9aa6;">${esc(SOURCE_LABEL)}</p>
+    <h1 style="margin:0 0 20px;font-size:21px;font-weight:600;color:#1b1c1a;">${esc(fullName)} wants the drop link</h1>
+    <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;">
+      ${row("Email", `<a href="mailto:${esc(contact.email)}" style="color:#1b1c1a;">${esc(contact.email)}</a>`)}
+      ${row("Instagram", contact.instagram ? esc(contact.instagram) : "not given")}
+      ${row("Time", `${esc(when)} ET`)}
+    </table>
+    ${
+      contact.message
+        ? `<div style="margin-top:20px;padding:14px 16px;background:#f4f2ec;border-radius:10px;">
+             <p style="margin:0 0 6px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#6f6d65;">Message</p>
+             <p style="margin:0;font-size:15px;line-height:1.55;color:#1b1c1a;white-space:pre-wrap;">${esc(contact.message)}</p>
+           </div>`
+        : ""
+    }
+    <p style="margin:22px 0 0;font-size:13px;color:#6f6d65;">Reply to this email to answer ${esc(contact.firstName)} directly.</p>
+  </div>
+</body></html>`
 
   try {
     const { Resend } = await import("resend")
@@ -93,8 +134,11 @@ export async function notifyOwner(id: string, contact: DollInvasionContact): Pro
       from: process.env.DOLL_FROM_EMAIL?.trim() || "Doll Invasion <onboarding@resend.dev>",
       to: notifyAddress(),
       replyTo: contact.email,
-      subject: `New Doll Invasion Contact — ${contact.firstName}`,
-      text: lines.join("\n"),
+      subject: `Doll Invasion signup: ${fullName}`,
+      text,
+      html,
+      // Keeps Gmail from collapsing separate signups into one thread.
+      headers: { "X-Entity-Ref-ID": id },
     })
     if (error) {
       console.log("[v0] Resend rejected the notification:", error.message)

@@ -79,6 +79,19 @@ export const consultations = pgTable("consultations", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 })
 
+/** Lead capture from the private "Doll Invasion 2026" preview page. */
+export const dollInvasionContacts = pgTable("doll_invasion_contacts", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name"),
+  email: text("email").notNull(),
+  instagram: text("instagram"),
+  message: text("message"),
+  source: text("source").notNull().default("Doll Invasion 2026"),
+  emailedAt: timestamp("emailed_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+})
+
 export const shareLinkEvents = pgTable("share_link_events", {
   id: bigint("id", { mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),
   shareLinkId: uuid("share_link_id").notNull(),

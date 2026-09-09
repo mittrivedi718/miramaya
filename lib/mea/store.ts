@@ -3,9 +3,15 @@
 // the project's database is configured; otherwise an in-memory map keeps the
 // preview alive. Writes are compare-and-swap on `revision`.
 
-import { pool } from "@/lib/db"
 import { makeSeedDocument } from "./seed"
 import { workspaceDocument, type WorkspaceDocument } from "./schema"
+
+// Imported lazily so a preview without a database never constructs the pool
+// (which throws when PG env vars are absent) and falls back to memory cleanly.
+async function getPool() {
+  const mod = await import("@/lib/db")
+  return mod.pool
+}
 
 export type Snapshot = { revision: number; document: WorkspaceDocument }
 
@@ -27,9 +33,10 @@ function normalize(raw: unknown): WorkspaceDocument {
 
 // ── Postgres implementation ────────────────────────────────────────────────
 let ensured: Promise<void> | null = null
-function ensureTable(): Promise<void> {
-  ensured ??= pool
-    .query(
+async function ensureTable(): Promise<void> {
+  ensured ??= (async () => {
+    const pool = await getPool()
+    await pool.query(
       `CREATE TABLE IF NOT EXISTS mea_workspaces (
         owner text PRIMARY KEY,
         revision integer NOT NULL DEFAULT 0,
@@ -38,13 +45,14 @@ function ensureTable(): Promise<void> {
         updated_at timestamptz NOT NULL DEFAULT now()
       )`,
     )
-    .then(() => undefined)
+  })()
   return ensured
 }
 
 class PostgresStore implements WorkspaceStore {
   async load(owner: string): Promise<Snapshot> {
     await ensureTable()
+    const pool = await getPool()
     const { rows } = await pool.query<{ revision: number; document: unknown }>(
       `SELECT revision, document FROM mea_workspaces WHERE owner = $1`,
       [owner],
@@ -64,6 +72,7 @@ class PostgresStore implements WorkspaceStore {
 
   async save(owner: string, expectedRevision: number, next: WorkspaceDocument): Promise<SaveResult> {
     await ensureTable()
+    const pool = await getPool()
     const nextRevision = expectedRevision + 1
     const { rowCount } = await pool.query(
       `UPDATE mea_workspaces SET revision = $3, document = $4, updated_at = now()
@@ -104,4 +113,16 @@ export function getStore(): WorkspaceStore {
   if (singleton) return singleton
   singleton = process.env.PGHOST ? new PostgresStore() : new MemoryStore()
   return singleton
+}
+
+export function loadWorkspace(owner: string): Promise<Snapshot> {
+  return getStore().load(owner)
+}
+
+export function saveWorkspace(
+  owner: string,
+  expectedRevision: number,
+  next: WorkspaceDocument,
+): Promise<SaveResult> {
+  return getStore().save(owner, expectedRevision, next)
 }

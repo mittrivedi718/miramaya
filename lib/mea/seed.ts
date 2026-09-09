@@ -16,8 +16,10 @@ function dateOnly(offsetDays: number): string {
   return d.toISOString().slice(0, 10)
 }
 
+type SeedInput = Partial<Item> & Pick<Item, "room" | "kind" | "title" | "status">
+
 let n = 0
-function ex(partial: Omit<Item, "id" | "isExample" | "createdAt" | "updatedAt"> & Partial<Pick<Item, "createdAt">>): Item {
+function ex(partial: SeedInput): Item {
   n += 1
   return {
     body: "",
@@ -81,9 +83,10 @@ function seedItems(): Item[] {
 }
 
 function seedVoices(): Record<RoomId, RoomVoice> {
-  const base = Object.fromEntries(
-    ROOMS.map((r) => [r.id, { instructions: r.voice, examples: [], prohibited: [] } satisfies RoomVoice]),
-  ) as Record<RoomId, RoomVoice>
+  const base = {} as Record<RoomId, RoomVoice>
+  for (const r of ROOMS) {
+    base[r.id] = { instructions: r.voice, examples: [], prohibited: [] }
+  }
 
   base.mxi = {
     instructions:

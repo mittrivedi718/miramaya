@@ -70,6 +70,13 @@ export function MeaProvider({
 
   const resolvedPalette: Exclude<Palette, "auto"> = palette === "auto" ? paletteForHour(clockHour) : palette
 
+  // Drive the scoped palette via a data attribute on the MEA world root, so the
+  // CSS in mea.css can theme every surface without touching the rest of the site.
+  useEffect(() => {
+    const root = window.document.querySelector<HTMLElement>(".mea-world")
+    if (root) root.dataset.palette = resolvedPalette
+  }, [resolvedPalette])
+
   const run = useCallback(
     async (command: Command): Promise<RunResult> => {
       setSaving(true)

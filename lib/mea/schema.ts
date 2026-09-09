@@ -20,6 +20,7 @@ export const itemStatus = z.enum([
   "active",
   "closed",
   "captured",
+  "dismissed",
 ])
 
 // Date-only string: "YYYY-MM-DD". No time, no zone — it books nothing.

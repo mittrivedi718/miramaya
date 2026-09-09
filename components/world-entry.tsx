@@ -667,9 +667,9 @@ function PilgrimageGate({ onSolved }: { onSolved: () => void }) {
           </g>
         </svg>
 
-        {/* the meetMIA emblem as the mirror at the summit; screen-blend drops its black field */}
+        {/* the meetMIA emblem as the mirror at the summit — transparent PNG, embedded */}
         <img
-          src="/mia/meetmia-emblem.jpeg"
+          src="/mia/mia-eye.png"
           alt="The MIA emblem — an eye holding a radiant M, reflected in water"
           className="pointer-events-none absolute"
           style={{
@@ -677,7 +677,6 @@ function PilgrimageGate({ onSolved }: { onSolved: () => void }) {
             top: pct(PILGRIM_PATH[last].y, 240),
             width: "34%",
             transform: `translate(-50%, -50%) scale(${crossed ? 1.35 : 1})`,
-            mixBlendMode: "screen",
             transition: "transform 0.9s cubic-bezier(0.22, 1, 0.36, 1), filter 0.9s ease",
             filter: crossed ? "brightness(1.8)" : "brightness(1)",
             animation: crossed ? "none" : "mia-emblem-breathe 6s ease-in-out infinite",

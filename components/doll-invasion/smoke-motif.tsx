@@ -11,7 +11,7 @@
 export function SmokeMotif({ className = "", size = 132 }: { className?: string; size?: number }) {
   return (
     <span className={`di-stage block ${className}`} style={{ width: size, height: size }} aria-hidden="true">
-      <svg viewBox="0 0 120 120" width={size} height={size} fill="none">
+      <svg viewBox="0 0 120 120" width={size} height={size} fill="none" style={{ borderRadius: "12px" }}>
         <defs>
           <linearGradient id="di-smoke-g" x1="0.5" y1="1" x2="0.5" y2="0">
             <stop offset="0%" stopColor="var(--brand-taupe)" stopOpacity="0.55" />

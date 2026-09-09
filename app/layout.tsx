@@ -1,6 +1,6 @@
 import { Analytics } from "@vercel/analytics/next"
 import type { Metadata, Viewport } from "next"
-import { Cormorant_Garamond, Geist } from "next/font/google"
+import { Cormorant_Garamond, Fraunces, Geist, Inter_Tight } from "next/font/google"
 import { AdminStar } from "@/components/admin-star"
 import { ThemeProvider } from "@/components/theme-provider"
 import { WaterAmbience } from "@/components/water-ambience"
@@ -12,6 +12,9 @@ const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
   weight: ["400", "500", "600"],
 })
+// MEA's typography: Fraunces for the few large moments, Inter Tight for interface.
+const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-fraunces", axes: ["opsz"] })
+const interTight = Inter_Tight({ subsets: ["latin"], variable: "--font-inter-tight" })
 
 export const metadata: Metadata = {
   title: { default: "MiraMaya", template: "%s · MiraMaya" },
@@ -44,7 +47,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       lang="en"
       data-scroll-behavior="smooth"
       suppressHydrationWarning
-      className={`bg-background ${geist.variable} ${cormorant.variable}`}
+      className={`bg-background ${geist.variable} ${cormorant.variable} ${fraunces.variable} ${interTight.variable}`}
     >
       <body className="font-sans antialiased">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>

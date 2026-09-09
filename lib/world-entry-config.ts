@@ -91,9 +91,9 @@ export const WORLD_ENTRY: Record<string, WorldEntryConfig> = {
     ambience: "astral",
     sells: false,
     redirect: "https://meetmia.vercel.app/",
-    clue: "A traveller waits at the water's edge. Walk them up, step by step, to the mirror — and beyond, to meet MIA.",
-    rule: "MIA — attention as the journey. Guide the small traveller along the path, one platform at a time, until they reach the mirror and cross into MIA.",
-    themes: ["signal", "the in-between", "reflection", "MIA"],
+    clue: "A traveller waits at the fork of two stairs. Tap the glowing stones to walk them up — left to MIA's eye, right to MEA's.",
+    rule: "MIA / MEA — attention as the journey. Tap the glowing stones to move the traveller one at a time; climb the left stair to MIA (who remembers) or the right to MEA (who helps you act). Step back down to switch stairs. Landing on the final stone behind an eye opens that realm.",
+    themes: ["signal", "the in-between", "reflection", "MIA", "MEA"],
   },
   mirabelle: {
     mechanic: "join",

@@ -1,9 +1,8 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { BrandMark } from "@/components/brand-mark"
+import { GuidebookRealms } from "@/components/guidebook-realms"
 import { hasGuidebookAccess } from "@/lib/guidebook"
-import { worldEntry } from "@/lib/world-entry-config"
-import { WORLDS } from "@/lib/worlds"
 import { GuideForm } from "./guide-form"
 
 export const dynamic = "force-dynamic"
@@ -51,27 +50,12 @@ export default async function GuidebookPage() {
           <p className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground">The keeper&apos;s guidebook</p>
           <h1 className="font-serif text-5xl leading-none tracking-tight md:text-6xl">How to enter each mirror</h1>
           <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
-            There is one rule of entry, worn four ways: each keeper asks for a small act of attention. Give the gesture
-            written here, and the mirror opens.
+            There is one rule of entry, worn six ways: each keeper asks for a small act of attention. Give the gesture
+            drawn here, and the mirror opens.
           </p>
         </header>
 
-        <ol className="mt-14 flex flex-col gap-4">
-          {WORLDS.map((world, index) => {
-            const cfg = worldEntry(world.handle)
-            return (
-              <li key={world.handle} className="border border-border bg-card p-5 md:p-7">
-                <div className="flex flex-wrap items-baseline justify-between gap-3">
-                  <h2 className="font-serif text-3xl tracking-tight">{world.name}</h2>
-                  <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                    Passage {String(index + 1).padStart(2, "0")} · {world.tagline}
-                  </span>
-                </div>
-                <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{cfg.rule}</p>
-              </li>
-            )
-          })}
-        </ol>
+        <GuidebookRealms />
 
         <div className="mt-14 flex flex-col items-center gap-4 border-t border-border pt-10 text-center">
           <p className="text-sm text-muted-foreground">

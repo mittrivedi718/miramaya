@@ -22,10 +22,12 @@ export function RecordSheet({
   item,
   onClose,
   onPromote,
+  onShapeWindow,
 }: {
   item: Item
   onClose: () => void
   onPromote?: () => void
+  onShapeWindow?: () => void
 }) {
   const { run, saving } = useMea()
 
@@ -60,7 +62,13 @@ export function RecordSheet({
         {item.source ? <p className="mt-1 text-xs text-[var(--mea-dim)]">Source: {item.source}</p> : null}
 
         <div className="mt-4 flex flex-wrap items-center gap-2">
-          {item.kind === "window" && onPromote ? (
+          {item.kind === "mirror" && onShapeWindow ? (
+            <MeaButton variant="ghost" onClick={onShapeWindow} disabled={saving}>
+              Shape into a window <ArrowRight size={15} aria-hidden />
+            </MeaButton>
+          ) : null}
+
+          {(item.kind === "window" || item.kind === "mirror") && onPromote ? (
             <MeaButton variant="primary" onClick={onPromote}>
               Open into a door <ArrowRight size={15} aria-hidden />
             </MeaButton>

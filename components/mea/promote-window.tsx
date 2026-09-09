@@ -44,7 +44,7 @@ export function PromoteWindow({ item, onClose }: { item: Item; onClose: () => vo
       <div className="mea-surface relative z-10 w-full max-w-md rounded-b-none rounded-t-2xl p-5 sm:rounded-2xl">
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-xs text-[var(--mea-dim)]">Window → Door</p>
+            <p className="text-xs text-[var(--mea-dim)]">{item.kind === "mirror" ? "Mirror → Door" : "Window → Door"}</p>
             <h2 className="mt-1 text-pretty font-display text-xl text-[var(--mea-silver)]">{item.title}</h2>
           </div>
           <button type="button" onClick={onClose} aria-label="Close" className="mea-tap rounded-lg p-1 text-[var(--mea-dim)]">

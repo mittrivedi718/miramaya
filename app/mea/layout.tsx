@@ -1,8 +1,7 @@
 import type { ReactNode } from "react"
 import type { Metadata, Viewport } from "next"
-import { redirect } from "next/navigation"
-import { requireAdmin } from "@/lib/admin"
 import { loadWorkspace } from "@/lib/mea/store"
+import { MEA_OWNER_ID } from "@/lib/mea/owner"
 import { MeaProvider } from "@/components/mea/provider"
 import { MeaShell } from "@/components/mea/shell"
 import "./mea.css"
@@ -26,10 +25,9 @@ export const viewport: Viewport = {
 }
 
 export default async function MeaLayout({ children }: { children: ReactNode }) {
-  const admin = await requireAdmin()
-  if (!admin) redirect("/admin/login")
-
-  const { revision, document } = await loadWorkspace(admin.id)
+  // MEA sits behind the site-wide view gate (proxy.ts). Once you've entered the
+  // shared passphrase for meetmit.me, it never asks for a second login here.
+  const { revision, document } = await loadWorkspace(MEA_OWNER_ID)
 
   return (
     <div className="mea-world min-h-[100dvh] font-body text-[var(--mea-silver)]">

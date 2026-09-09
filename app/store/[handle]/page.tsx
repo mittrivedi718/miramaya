@@ -4,6 +4,7 @@ import { MayaGallery } from "@/components/maya-gallery"
 import { ProductGrid } from "@/components/product-grid"
 import { StoreHeader } from "@/components/store-header"
 import { WorldGate } from "@/components/world-entry"
+import { MiaMeaGate } from "@/components/mia-mea-gate"
 import { WorldPlaceholder } from "@/components/world-placeholder"
 import { requireAdmin } from "@/lib/admin"
 import { hasWorldGrant } from "@/lib/portal-access"
@@ -21,6 +22,10 @@ export default async function WorldStorePage({ params }: { params: Promise<{ han
   const { handle } = await params
   const world = getWorld(handle)
   if (!world) notFound()
+
+  // The MIA mirror is now a chooser: walk left to MIA (the chat) or right to
+  // MEA (the executive assistant). It always renders its own forking gate.
+  if (handle === "mia") return <MiaMeaGate world={world} />
 
   const entered = !REDIRECT_WORLDS.has(handle) && ((await hasWorldGrant(handle)) || (await requireAdmin()))
   // Not yet inside: show this world's own keeper's gate (a distinct act of attention).

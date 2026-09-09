@@ -224,7 +224,7 @@ export function PreviewExperience() {
                         width={1320}
                         height={2400}
                         sizes="(max-width: 640px) 90vw, 560px"
-                        className="h-auto w-full rounded-lg"
+                        className="h-auto w-full rounded-lg [clip-path:inset(0_12px_0_0)]"
                       />
                       <p className="text-sm leading-relaxed text-muted-foreground text-pretty">{t.more}</p>
                     </div>

@@ -1,0 +1,241 @@
+/* MEA's own world. Scoped entirely under .mea-world so it never leaks into the
+   rest of MiraMaya. Three palettes, switchable; tokens are plain custom
+   properties so components can reference them with bg-[var(--mea-surface)] etc. */
+
+.mea-world {
+  /* Miramire is the default even before JS resolves the stored choice. */
+  --mea-ground: #14181f;
+  --mea-surface: #1c222c;
+  --mea-veil: #2a3340;
+  --mea-mira: #b9a8e6;
+  --mea-teal: #2e8c8c;
+  --mea-cyan: #6fe3e1;
+  --mea-silver: #c9ceda;
+  --mea-dim: #8792a6;
+
+  min-height: 100dvh;
+  background-color: var(--mea-ground);
+  color: var(--mea-silver);
+  font-family: var(--font-inter-tight), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.mea-world[data-palette="miramire"] {
+  --mea-ground: #14181f;
+  --mea-surface: #1c222c;
+  --mea-veil: #2a3340;
+  --mea-mira: #b9a8e6;
+  --mea-teal: #2e8c8c;
+  --mea-cyan: #6fe3e1;
+  --mea-silver: #c9ceda;
+  --mea-dim: #8792a6;
+}
+
+.mea-world[data-palette="daylight"] {
+  --mea-ground: #f1f0f6;
+  --mea-surface: #fbfafe;
+  --mea-veil: #dcd8e6;
+  --mea-mira: #6b4fb0;
+  --mea-teal: #2e7d7d;
+  --mea-cyan: #178f8c;
+  --mea-silver: #1c222c;
+  --mea-dim: #5b6472;
+}
+
+.mea-world[data-palette="obsidian"] {
+  --mea-ground: #0a0c10;
+  --mea-surface: #12151b;
+  --mea-veil: #1e2129;
+  --mea-mira: #9c93b5;
+  --mea-teal: #24504f;
+  --mea-cyan: #6fe3e1;
+  --mea-silver: #c9ceda;
+  --mea-dim: #7a8598;
+}
+
+/* Type helpers — Fraunces for the few large moments, Inter Tight for interface. */
+.font-display,
+.mea-display {
+  font-family: var(--font-fraunces), Georgia, serif;
+  font-optical-sizing: auto;
+  letter-spacing: -0.01em;
+}
+.font-body {
+  font-family: var(--font-inter-tight), system-ui, -apple-system, sans-serif;
+}
+
+/* Glass surface: a faint vertical gradient and a 1px top highlight, like glass
+   catching light. No drop shadow. */
+.mea-surface {
+  background-image: linear-gradient(
+    to bottom,
+    color-mix(in oklab, var(--mea-surface) 92%, var(--mea-silver) 8%),
+    var(--mea-surface)
+  );
+  border: 1px solid var(--mea-veil);
+  border-radius: 14px;
+  position: relative;
+}
+.mea-surface::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  border-radius: 14px 14px 0 0;
+  background: color-mix(in oklab, var(--mea-silver) 24%, transparent);
+  pointer-events: none;
+}
+
+/* The one orchestrated motion: entering a room lifts the reflected top edge into
+   a frame — a mirror becoming a door. ~320ms, eased. */
+.mea-room-enter {
+  animation: mea-door 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: top center;
+}
+@keyframes mea-door {
+  0% {
+    opacity: 0;
+    transform: perspective(1200px) rotateX(-16deg) translateY(-6px);
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(1200px) rotateX(0deg) translateY(0);
+  }
+}
+
+.mea-tap {
+  transition: transform 120ms ease, background-color 160ms ease, border-color 160ms ease, opacity 160ms ease;
+}
+.mea-tap:active {
+  transform: scale(0.98);
+}
+
+/* The MEA eye: a lens with a lowercase i standing in the iris. */
+.mea-eye-mark {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 1.5px solid var(--mea-silver);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex: none;
+}
+.mea-eye-mark::before {
+  /* the i stem */
+  content: "";
+  position: absolute;
+  bottom: 4px;
+  width: 2px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--mea-silver);
+}
+.mea-eye-mark::after {
+  /* the i dot, in lavender */
+  content: "";
+  position: absolute;
+  top: 4px;
+  width: 3px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--mea-mira);
+}
+
+/* ── Navigation ──────────────────────────────────────────────────────── */
+.mea-tabbar {
+  background: color-mix(in oklab, var(--mea-ground) 86%, transparent);
+  backdrop-filter: blur(14px);
+  border-top: 1px solid var(--mea-veil);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.mea-tab {
+  color: var(--mea-dim);
+}
+.mea-tab[data-active="true"] {
+  color: var(--mea-silver);
+}
+.mea-tab[data-active="true"] span:last-child {
+  color: var(--mea-cyan);
+}
+
+.mea-rail {
+  border-color: var(--mea-veil);
+}
+.mea-rail-link {
+  color: var(--mea-dim);
+}
+.mea-rail-link:hover {
+  color: var(--mea-silver);
+}
+.mea-rail-link[data-active="true"] {
+  color: var(--mea-silver);
+  background: color-mix(in oklab, var(--mea-teal) 18%, transparent);
+}
+
+/* ── Small controls ─────────────────────────────────────────────────── */
+.mea-ghost-btn {
+  border: 1px solid var(--mea-veil);
+  color: var(--mea-silver);
+}
+.mea-ghost-btn:hover {
+  border-color: var(--mea-teal);
+}
+.mea-menu {
+  background: var(--mea-surface);
+  border: 1px solid var(--mea-veil);
+}
+.mea-menu-item {
+  color: var(--mea-silver);
+}
+.mea-menu-item:hover,
+.mea-menu-item[data-selected="true"] {
+  background: color-mix(in oklab, var(--mea-teal) 16%, transparent);
+}
+.mea-link {
+  color: var(--mea-cyan);
+  text-underline-offset: 3px;
+}
+.mea-link:hover {
+  text-decoration: underline;
+}
+.mea-conflict {
+  background: color-mix(in oklab, var(--mea-mira) 18%, var(--mea-ground));
+  border-bottom: 1px solid var(--mea-veil);
+  color: var(--mea-silver);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mea-room-enter {
+    animation: mea-fade 200ms ease both;
+    transform: none;
+  }
+  @keyframes mea-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  .mea-tap:active {
+    transform: none;
+  }
+}
+
+.mea-garden-object {
+  transition: opacity 160ms ease, transform 160ms ease;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.mea-garden-object:hover {
+  opacity: 0.82;
+}
+
+/* Focus is always visible — accessibility is not optional here. */
+.mea-world :focus-visible {
+  outline: 2px solid var(--mea-cyan);
+  outline-offset: 2px;
+  border-radius: 6px;
+}

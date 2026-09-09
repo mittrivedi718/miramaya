@@ -8,35 +8,43 @@ import { WorldBackground } from "./world-background"
 /* ---------------------------------------------------------------------------
    The MIA / MEA chooser.
 
-   One traveller stands at the base of two flights of steps. Walk them LEFT and
-   they climb to MIA's emblem-eye and cross over to the MIA chat. Walk them RIGHT
-   and they climb to MEA's i-in-the-iris eye and open the executive assistant.
+   One traveller stands at the base of two flights of stone steps. Choose a side
+   and they hop up the blocks ONE AT A TIME until they reach the final block that
+   sits behind that side's eye — then the eye opens and the route pushes.
 
-   Both eyes are real, focusable buttons — the walk is enhancement, not the only
-   way through — and reduced-motion visitors skip straight to the crossing.
+   LEFT, at the far left, is MIA's emblem-eye → crosses to the MIA chat.
+   RIGHT, at the far right, is MEA's i-in-the-iris eye → opens the assistant.
+
+   Both eyes are real, focusable buttons (the walk is enhancement, not the only
+   way through), and reduced-motion visitors skip straight to the crossing.
 --------------------------------------------------------------------------- */
 
 const MIA_URL = "https://meetmia.vercel.app/"
 
-// Isometric step paths in a 300 x 260 field. Index 0 is the shared base stone;
-// the last node is the foot of that side's eye.
+// Step nodes in a 300 x 260 field. Index 0 is the shared base stone; the last
+// node is the SUMMIT block that sits behind that side's eye. MIA climbs to the
+// far left, MEA mirrors it to the far right.
 const MIA_PATH: ReadonlyArray<readonly [number, number]> = [
-  [150, 232],
-  [124, 208],
-  [106, 178],
-  [95, 142],
-  [94, 104],
+  [150, 236],
+  [122, 212],
+  [98, 186],
+  [78, 150],
+  [66, 92],
 ]
 const MEA_PATH: ReadonlyArray<readonly [number, number]> = [
-  [150, 232],
-  [176, 208],
-  [194, 178],
-  [205, 142],
-  [206, 104],
+  [150, 236],
+  [178, 212],
+  [202, 186],
+  [222, 150],
+  [234, 92],
 ]
 
 const MIA_GLOW = "#9aa6d8" // the emblem's cool silver-blue
 const MEA_GLOW = "#b9a8e6" // MEA's lavender
+
+const SEG_MS = 260 // time to hop one block
+const DWELL_MS = 120 // pause landed on each block
+const HOP = 17 // arc height of each hop
 
 type Choice = "mia" | "mea"
 
@@ -44,35 +52,13 @@ function easeInOut(t: number): number {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
 }
 
-/** Position along a polyline at fraction t (0..1), by cumulative segment length. */
-function pointAt(path: ReadonlyArray<readonly [number, number]>, t: number): [number, number] {
-  if (t <= 0) return [path[0][0], path[0][1]]
-  if (t >= 1) return [path[path.length - 1][0], path[path.length - 1][1]]
-  const seg: number[] = []
-  let total = 0
-  for (let i = 1; i < path.length; i++) {
-    const d = Math.hypot(path[i][0] - path[i - 1][0], path[i][1] - path[i - 1][1])
-    seg.push(d)
-    total += d
-  }
-  let dist = t * total
-  for (let i = 1; i < path.length; i++) {
-    if (dist <= seg[i - 1]) {
-      const f = seg[i - 1] === 0 ? 0 : dist / seg[i - 1]
-      return [path[i - 1][0] + (path[i][0] - path[i - 1][0]) * f, path[i - 1][1] + (path[i][1] - path[i - 1][1]) * f]
-    }
-    dist -= seg[i - 1]
-  }
-  const end = path[path.length - 1]
-  return [end[0], end[1]]
-}
-
 const pct = (v: number, span: number) => `${(v / span) * 100}%`
 
 export function MiaMeaGate({ world }: { world: World }) {
   const router = useRouter()
   const [choice, setChoice] = useState<Choice | null>(null)
-  const [t, setT] = useState(0)
+  const [fig, setFig] = useState<readonly [number, number]>([MIA_PATH[0][0], MIA_PATH[0][1]])
+  const [reached, setReached] = useState(0) // nodes fully landed on — drives the lit trail
   const [opened, setOpened] = useState(false)
   const [last, setLast] = useState<Choice | null>(null)
   const committed = useRef(false)
@@ -117,28 +103,49 @@ export function MiaMeaGate({ world }: { world: World }) {
       if (committed.current) return
       committed.current = true
       setChoice(dir)
+      const path = dir === "mea" ? MEA_PATH : MIA_PATH
+      const segments = path.length - 1
 
       const reduced =
-        typeof window !== "undefined" &&
-        window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+        typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
 
       if (reduced) {
-        setT(1)
+        setFig(path[path.length - 1])
+        setReached(segments)
         setOpened(true)
         window.setTimeout(() => cross(dir), 260)
         return
       }
 
-      const DURATION = 820
-      const start = performance.now()
+      // Hop block by block: for each segment, arc across in SEG_MS, then dwell.
+      let seg = 0
+      let segStart = performance.now()
       const tick = (now: number) => {
-        const p = Math.min(1, (now - start) / DURATION)
-        setT(easeInOut(p))
-        if (p < 1) {
+        const elapsed = now - segStart
+        const a = path[seg]
+        const b = path[seg + 1]
+        if (elapsed < SEG_MS) {
+          const f = easeInOut(elapsed / SEG_MS)
+          const x = a[0] + (b[0] - a[0]) * f
+          const y = a[1] + (b[1] - a[1]) * f - HOP * Math.sin(Math.PI * f)
+          setFig([x, y])
+          raf.current = requestAnimationFrame(tick)
+        } else if (elapsed < SEG_MS + DWELL_MS) {
+          // landed squarely on block b
+          setFig(b)
+          setReached(seg + 1)
           raf.current = requestAnimationFrame(tick)
         } else {
-          setOpened(true)
-          window.setTimeout(() => cross(dir), 220)
+          seg += 1
+          if (seg >= segments) {
+            setFig(path[path.length - 1])
+            setReached(segments)
+            setOpened(true)
+            window.setTimeout(() => cross(dir), 260)
+            return
+          }
+          segStart = now
+          raf.current = requestAnimationFrame(tick)
         }
       }
       raf.current = requestAnimationFrame(tick)
@@ -147,19 +154,8 @@ export function MiaMeaGate({ world }: { world: World }) {
   )
 
   const path = choice === "mea" ? MEA_PATH : MIA_PATH
-  const fig = choice ? pointAt(path, t) : [MIA_PATH[0][0], MIA_PATH[0][1]]
   const litTrail = choice
-    ? (() => {
-        // Draw the walked portion of the chosen path up to the figure.
-        const pts = [pointAt(path, 0)]
-        for (let i = 1; i < path.length; i++) {
-          // include nodes already passed
-          const nodeT = i / (path.length - 1)
-          if (nodeT <= t) pts.push([path[i][0], path[i][1]])
-        }
-        pts.push([fig[0], fig[1]])
-        return pts.map((p) => `${p[0]},${p[1]}`).join(" ")
-      })()
+    ? [...path.slice(0, reached + 1).map((p) => `${p[0]},${p[1]}`), `${fig[0]},${fig[1]}`].join(" ")
     : ""
 
   const dim = (side: Choice) => choice !== null && choice !== side
@@ -193,13 +189,13 @@ export function MiaMeaGate({ world }: { world: World }) {
         </p>
         <h1 className="mv-rise mv-rise-2 mb-2 font-serif text-5xl tracking-tight md:text-7xl">MIA / MEA</h1>
         <p className="mv-rise mv-rise-2 mb-8 max-w-sm text-pretty text-sm leading-relaxed text-muted-foreground">
-          Two eyes at the top of two stairs. Walk left to <span className="text-foreground">MIA</span>, who remembers —
+          Two eyes at the top of two stairs. Climb left to <span className="text-foreground">MIA</span>, who remembers —
           or right to <span className="text-foreground">MEA</span>, who helps you act.
         </p>
 
         {/* The forking stairway. */}
         <div
-          className="mv-rise mv-rise-3 relative w-[min(90vw,24rem)] touch-none select-none"
+          className="mv-rise mv-rise-3 relative w-[min(92vw,26rem)] touch-none select-none"
           style={{ aspectRatio: "300 / 260" }}
         >
           <svg viewBox="0 0 300 260" className="absolute inset-0 h-full w-full" aria-hidden="true">
@@ -230,42 +226,28 @@ export function MiaMeaGate({ world }: { world: World }) {
               />
             )}
 
-            {/* isometric step platforms for each side (skip the shared base at index 0) */}
-            {([[MIA_PATH, MIA_GLOW, "mia"] as const, [MEA_PATH, MEA_GLOW, "mea"] as const]).map(
-              ([p, glow, side]) =>
-                p.slice(1).map((node, i) => {
-                  const w = 22
-                  const h = 8
-                  const depth = 12
-                  const faded = dim(side as Choice)
-                  return (
-                    <g key={`${side}-${i}`} style={{ opacity: faded ? 0.25 : 1, transition: "opacity 0.5s ease" }}>
-                      <path
-                        d={`M ${node[0] - w} ${node[1]} L ${node[0]} ${node[1] + h} L ${node[0]} ${node[1] + h + depth} L ${node[0] - w} ${node[1] + depth} Z`}
-                        fill={`color-mix(in oklab, ${glow} 16%, #05060d)`}
-                      />
-                      <path
-                        d={`M ${node[0] + w} ${node[1]} L ${node[0]} ${node[1] + h} L ${node[0]} ${node[1] + h + depth} L ${node[0] + w} ${node[1] + depth} Z`}
-                        fill={`color-mix(in oklab, ${glow} 9%, #05060d)`}
-                      />
-                      <path
-                        d={`M ${node[0]} ${node[1] - h} L ${node[0] + w} ${node[1]} L ${node[0]} ${node[1] + h} L ${node[0] - w} ${node[1]} Z`}
-                        fill={`color-mix(in oklab, ${glow} 26%, #05060d)`}
-                        stroke={glow}
-                        strokeOpacity="0.5"
-                        strokeWidth="0.75"
-                      />
-                    </g>
-                  )
-                }),
+            {/* shared base stone */}
+            <StepBlock node={MIA_PATH[0]} glow="#c9ced8" faded={choice !== null} summit={false} />
+
+            {/* isometric step blocks for each side (index 1..N-1; last is the summit) */}
+            {([[MIA_PATH, MIA_GLOW, "mia"] as const, [MEA_PATH, MEA_GLOW, "mea"] as const]).map(([p, glow, side]) =>
+              p.slice(1).map((node, i) => (
+                <StepBlock
+                  key={`${side}-${i}`}
+                  node={node}
+                  glow={glow}
+                  faded={dim(side as Choice)}
+                  summit={i === p.length - 2}
+                />
+              )),
             )}
 
-            {/* the traveller — a small neutral figure; idle bob until a way is chosen */}
+            {/* the traveller — a small luminous figure; idle bob until a way is chosen */}
             <g
               style={{
                 transform: `translate(${fig[0]}px, ${fig[1] - 9}px)`,
-                transition: choice ? "none" : "transform 0.5s ease",
                 opacity: opened ? 0 : 1,
+                transition: opened ? "opacity 0.4s ease" : "none",
                 filter: "drop-shadow(0 0 4px color-mix(in oklab, var(--foreground) 60%, white))",
               }}
             >
@@ -277,7 +259,8 @@ export function MiaMeaGate({ world }: { world: World }) {
             </g>
           </svg>
 
-          {/* MIA eye — the existing emblem; screen blend drops its black field */}
+          {/* MIA eye — the existing emblem; screen blend drops its black field so
+              it reads as embedded in the page, no square border. */}
           <EyeButton
             side="mia"
             label="MIA"
@@ -293,12 +276,13 @@ export function MiaMeaGate({ world }: { world: World }) {
             <img
               src="/mia/meetmia-emblem.jpeg"
               alt=""
-              className="pointer-events-none w-[118%] max-w-none"
+              className="pointer-events-none w-[114%] max-w-none"
               style={{ mixBlendMode: "screen" }}
             />
           </EyeButton>
 
-          {/* MEA eye — the lens with a lowercase i standing in the iris */}
+          {/* MEA eye — the almond lens with a lowercase i standing in the iris.
+              Also on black, screen-blended, so it matches MIA and sits embedded. */}
           <EyeButton
             side="mea"
             label="MEA"
@@ -311,21 +295,63 @@ export function MiaMeaGate({ world }: { world: World }) {
             disabled={committed.current}
             onChoose={() => choose("mea")}
           >
-            <img src="/mea/icon-512.png" alt="" className="pointer-events-none w-full rounded-full" />
+            <img
+              src="/mea/mea-eye.png"
+              alt=""
+              className="pointer-events-none w-[112%] max-w-none"
+              style={{ mixBlendMode: "screen" }}
+            />
           </EyeButton>
         </div>
 
         <p className="mv-rise mv-rise-3 mt-8 min-h-4 text-[10px] uppercase tracking-[0.26em] text-muted-foreground/80">
           {choice
             ? choice === "mia"
-              ? "crossing over to meet MIA…"
-              : "opening MEA…"
+              ? "climbing to MIA…"
+              : "climbing to MEA…"
             : last
               ? `last time, you opened ${last.toUpperCase()}`
               : "choose a stairway"}
         </p>
       </section>
     </main>
+  )
+}
+
+// A single isometric stone block. The summit block is the one that sits behind
+// the eye — where the traveller finally lands.
+function StepBlock({
+  node,
+  glow,
+  faded,
+  summit,
+}: {
+  node: readonly [number, number]
+  glow: string
+  faded: boolean
+  summit: boolean
+}) {
+  const w = summit ? 24 : 21
+  const h = 8
+  const depth = 12
+  return (
+    <g style={{ opacity: faded ? 0.25 : 1, transition: "opacity 0.5s ease" }}>
+      <path
+        d={`M ${node[0] - w} ${node[1]} L ${node[0]} ${node[1] + h} L ${node[0]} ${node[1] + h + depth} L ${node[0] - w} ${node[1] + depth} Z`}
+        fill={`color-mix(in oklab, ${glow} 16%, #05060d)`}
+      />
+      <path
+        d={`M ${node[0] + w} ${node[1]} L ${node[0]} ${node[1] + h} L ${node[0]} ${node[1] + h + depth} L ${node[0] + w} ${node[1] + depth} Z`}
+        fill={`color-mix(in oklab, ${glow} 9%, #05060d)`}
+      />
+      <path
+        d={`M ${node[0]} ${node[1] - h} L ${node[0] + w} ${node[1]} L ${node[0]} ${node[1] + h} L ${node[0] - w} ${node[1]} Z`}
+        fill={`color-mix(in oklab, ${glow} ${summit ? 34 : 26}%, #05060d)`}
+        stroke={glow}
+        strokeOpacity={summit ? 0.75 : 0.5}
+        strokeWidth={summit ? 1 : 0.75}
+      />
+    </g>
   )
 }
 
@@ -359,12 +385,12 @@ function EyeButton({
       type="button"
       onClick={onChoose}
       disabled={disabled}
-      aria-label={side === "mia" ? "Walk to MIA — the chat that remembers" : "Walk to MEA — the executive assistant"}
-      className="group absolute flex -translate-x-1/2 flex-col items-center gap-2 rounded-2xl p-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground disabled:cursor-default"
+      aria-label={side === "mia" ? "Climb to MIA — the chat that remembers" : "Climb to MEA — the executive assistant"}
+      className="group absolute flex flex-col items-center gap-2 rounded-2xl p-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground disabled:cursor-default"
       style={{
         left: pct(x, 300),
-        top: "1%",
-        width: "31%",
+        top: "-2%",
+        width: "33%",
         opacity: dimmed ? 0.3 : 1,
         transition: "opacity 0.5s ease, transform 0.7s cubic-bezier(0.22,1,0.36,1)",
         transform: `translateX(-50%) scale(${opened ? 1.16 : 1})`,
@@ -389,7 +415,7 @@ function EyeButton({
             style={{ borderColor: glow, animation: "mm-ring 2.8s ease-out infinite", transformOrigin: "center" }}
           />
         )}
-        <span className="relative grid w-[78%] place-items-center transition-transform duration-500 group-hover:scale-105">
+        <span className="relative grid w-[86%] place-items-center transition-transform duration-500 group-hover:scale-105">
           {children}
         </span>
       </span>

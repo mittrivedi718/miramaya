@@ -100,7 +100,7 @@ export function PortalGallery() {
             style={{ "--world-glow": world.glowColor } as CSSProperties}
             aria-label={`Enter ${world.name}`}
           >
-            <span className="absolute inset-3 rounded-[50%_50%_1.5rem_1.5rem] border border-foreground/20" />
+            <span className="mira-ocean-ripple absolute inset-3 rounded-[50%_50%_1.5rem_1.5rem] border border-foreground/20" />
             {/* Soft scrim so the caption stays legible over any scene, yet still reads like a reflection surfacing through water. */}
             <span className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 rounded-b-[2rem] bg-gradient-to-t from-background/85 via-background/45 to-transparent backdrop-blur-[2px]" aria-hidden="true" />
             <span className="relative flex w-full items-end justify-between border-t border-foreground/40 pt-4 text-left">

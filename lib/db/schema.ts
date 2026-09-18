@@ -99,3 +99,35 @@ export const shareLinkEvents = pgTable("share_link_events", {
   requestFingerprint: text("request_fingerprint"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 })
+
+/**
+ * Private, one-time full-site view links. Distinct from `shareLinks` (which grant
+ * a single world's portal): a claimed link opens the whole site through the gate
+ * for a fixed window. Status is DERIVED from these timestamps, never stored, so it
+ * can never drift and needs no cron. See lib/private-view/status.ts.
+ */
+export const privateShareLinks = pgTable("private_share_links", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  tokenHash: text("token_hash").notNull().unique(),
+  // AES-256-GCM of the raw token, so an UNOPENED link can be re-copied in admin.
+  // Nulled the moment it is claimed or revoked — after that the token is useless.
+  tokenCiphertext: text("token_ciphertext"),
+  label: text("label"),
+  durationSeconds: integer("duration_seconds").notNull().default(1800),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  firstViewedAt: timestamp("first_viewed_at", { withTimezone: true }),
+  expiresAt: timestamp("expires_at", { withTimezone: true }),
+  revokedAt: timestamp("revoked_at", { withTimezone: true }),
+})
+
+export const privateViewSessions = pgTable("private_view_sessions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  // UNIQUE: a link can never have two sessions, even under a race.
+  linkId: uuid("link_id")
+    .notNull()
+    .unique()
+    .references(() => privateShareLinks.id, { onDelete: "cascade" }),
+  sessionTokenHash: text("session_token_hash").notNull().unique(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+})
